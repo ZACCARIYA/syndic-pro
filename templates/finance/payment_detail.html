@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détails du Paiement - Syndic{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-credit-card me-2"></i>Détails du Paiement
+                </h1>
+                <div>
+                    <a href="{% url 'finance:payment_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour aux paiements
+                    </a>
+                    {% if user.role in 'SUPERADMIN,SYNDIC' %}
+                        <a href="{% url 'finance:payment_update' payment.pk %}" class="btn btn-warning">
+                            <i class="fas fa-edit me-1"></i>Modifier
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations du Paiement
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Résident :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                            {{ payment.user.first_name|first|default:payment.user.username|first|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ payment.user.get_full_name|default:payment.user.username }}</div>
+                                            {% if payment.user.apartment %}
+                                                <small class="text-muted">{{ payment.user.apartment }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Montant :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    <span class="badge bg-success fs-6">{{ payment.amount }} DH</span>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Méthode de Paiement :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    <span class="badge bg-info">{{ payment.get_payment_method_display }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Date de Paiement :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {{ payment.payment_date|date:"d/m/Y" }}
+                                </div>
+                            </div>
+                            
+                            {% if payment.contribution %}
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Cotisation :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    <a href="{% url 'finance:contribution_detail' payment.contribution.pk %}" class="text-decoration-none">
+                                        {{ payment.contribution.period }} - {{ payment.contribution.amount }} DH
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if payment.reference %}
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Référence :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    <code>{{ payment.reference }}</code>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Statut :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {% if payment.is_verified %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Vérifié
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>En attente
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if payment.verified_by %}
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Vérifié par :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {{ payment.verified_by.get_full_name|default:payment.verified_by.username }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Date de vérification :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {{ payment.verified_at|date:"d/m/Y H:i" }}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if payment.notes %}
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Notes :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="text-muted">{{ payment.notes }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <strong>Date de création :</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    {{ payment.created_at|date:"d/m/Y H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if payment.payment_proof %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-image me-2"></i>Justificatif de Paiement
+                            </h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <img src="{{ payment.payment_proof.url }}" 
+                                 alt="Justificatif de paiement" 
+                                 class="img-fluid rounded shadow"
+                                 style="max-height: 400px; max-width: 100%;"
+                                 id="proofImage">
+                            
+                            <div class="mt-3">
+                                <a href="{% url 'finance:payment_proof' payment.pk %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-expand me-1"></i>Voir en grand
+                                </a>
+                                <a href="{{ payment.payment_proof.url }}" download class="btn btn-outline-success">
+                                    <i class="fas fa-download me-1"></i>Télécharger
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2"></i>Statistiques
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-primary">{{ payment.user.payments.count }}</h4>
+                                        <small class="text-muted">Paiements totaux</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-success">{{ payment.user.payments.filter(is_verified=True).count }}</h4>
+                                        <small class="text-muted">Vérifiés</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-info">{{ payment.user.contributions.count }}</h4>
+                                        <small class="text-muted">Cotisations</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h4 class="text-warning">{{ payment.user.payments.filter(is_verified=False).count }}</h4>
+                                        <small class="text-muted">En attente</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if user.role in 'SUPERADMIN,SYNDIC' and not payment.is_verified %}
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-check-circle me-2"></i>Actions de Vérification
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-success" onclick="verifyPayment({{ payment.pk }})">
+                                    <i class="fas fa-check me-1"></i>Valider le Paiement
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="rejectPayment({{ payment.pk }})">
+                                    <i class="fas fa-times me-1"></i>Rejeter le Paiement
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+#proofImage {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: zoom-in;
+}
+
+#proofImage:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+}
+
+.badge {
+    font-size: 0.875em;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+</style>
+
+<script>
+function verifyPayment(paymentId) {
+    if (confirm('Êtes-vous sûr de vouloir valider ce paiement ?')) {
+        // Ici vous pouvez ajouter une requête AJAX pour valider le paiement
+        alert('Fonctionnalité de validation à implémenter');
+    }
+}
+
+function rejectPayment(paymentId) {
+    if (confirm('Êtes-vous sûr de vouloir rejeter ce paiement ?')) {
+        // Ici vous pouvez ajouter une requête AJAX pour rejeter le paiement
+        alert('Fonctionnalité de rejet à implémenter');
+    }
+}
+
+// Image zoom functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const image = document.getElementById('proofImage');
+    if (image) {
+        image.addEventListener('click', function() {
+            window.open('{% url "finance:payment_proof" payment.pk %}', '_blank');
+        });
+    }
+});
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+

@@ -1,0 +1,46 @@
+<!-- ===== COMPOSANT CHAMP DE FORMULAIRE ===== -->
+
+<div class="form-group">
+    {% if label %}
+    <label for="{{ field.id_for_label }}" class="form-label">
+        {% if icon %}<i class="{{ icon }} text-primary"></i>{% endif %}
+        {{ label }}
+        {% if required %}<span class="text-danger">*</span>{% endif %}
+    </label>
+    {% endif %}
+    
+    {% if field.field.widget.input_type == 'select' %}
+        <select id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-select" {% if required %}required{% endif %}>
+            {% for choice in field.field.choices %}
+            <option value="{{ choice.0 }}" {% if choice.0 == field.value %}selected{% endif %}>
+                {{ choice.1 }}
+            </option>
+            {% endfor %}
+        </select>
+    {% elif field.field.widget.input_type == 'textarea' %}
+        <textarea id="{{ field.id_for_label }}" name="{{ field.name }}" class="form-control" 
+                  {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+                  {% if required %}required{% endif %}
+                  rows="{{ rows|default:3 }}">{{ field.value|default:'' }}</textarea>
+    {% else %}
+        <input type="{{ field.field.widget.input_type|default:'text' }}" 
+               id="{{ field.id_for_label }}" 
+               name="{{ field.name }}" 
+               class="form-control"
+               value="{{ field.value|default:'' }}"
+               {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+               {% if required %}required{% endif %}>
+    {% endif %}
+    
+    {% if field.errors %}
+    <div class="text-danger mt-2">
+        {% for error in field.errors %}
+        <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if help_text %}
+    <small class="text-muted mt-1 d-block">{{ help_text }}</small>
+    {% endif %}
+</div>

@@ -1,0 +1,52 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django static collection output
+staticfiles/
+
+# User-uploaded media (do not commit)
+media/
+
+# SQLite dev database
+/db.sqlite3
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files / secrets
+.env
+.env.*
+
+# Packaging / build
+build/
+dist/
+.eggs/
+*.egg-info/
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
+
+# Node (if present)
+node_modules/
+
+# Logs
+*.log
+
+

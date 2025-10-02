@@ -1,0 +1,50 @@
+<!-- ===== NAVIGATION SYNDIC SIMPLIFIÉE ===== -->
+<div class="syndic-navigation">
+    <!-- ===== NAVIGATION PRINCIPALE ===== -->
+    <ul class="navbar-nav me-auto">
+        <!-- 🏠 TABLEAU DE BORD (PAGE PRINCIPALE) -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'finance:syndic_dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Tableau de Bord</span>
+            </a>
+        </li>
+        
+        
+        <!-- 📅 PLANNING -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'finance:calendar' %}">
+                <i class="fas fa-calendar"></i>
+                <span>Calendrier</span>
+            </a>
+        </li>
+        
+        <!-- 📊 RAPPORTS -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'finance:report_list' %}">
+                <i class="fas fa-chart-bar"></i>
+                <span>Rapports</span>
+            </a>
+        </li>
+        
+        <!-- 👨‍💼 ADMINISTRATION (Superadmin seulement) -->
+        {% if user.role == 'SUPERADMIN' %}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                <i class="fas fa-cog"></i>
+                <span>Admin</span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><h6 class="dropdown-header">👨‍💼 Gestion Syndics</h6></li>
+                <li><a class="dropdown-item" href="{% url 'finance:syndic_management' %}">
+                    <i class="fas fa-list me-2"></i>Gérer Syndics
+                </a></li>
+                <li><a class="dropdown-item" href="{% url 'finance:syndic_create' %}">
+                    <i class="fas fa-user-plus me-2"></i>Ajouter Syndic
+                </a></li>
+            </ul>
+        </li>
+        {% endif %}
+    </ul>
+    
+</div>

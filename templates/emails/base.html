@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ subject|default:app_name }}</title>
+    <!--[if mso]>
+    <noscript>
+      <xml>
+        <o:OfficeDocumentSettings>
+          <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+      </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+      /* Email reset - compatible avec tous les clients */
+      body, table, td, p, a, li, blockquote { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+      table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+      img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+      
+      /* Reset */
+      body { margin: 0 !important; padding: 0 !important; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+      table { border-collapse: collapse !important; }
+      div[style*="margin: 16px 0"] { margin: 16px 0 !important; }
+      
+      /* Container principal */
+      .email-wrapper { width: 100%; background-color: #f8fafc; padding: 20px 0; }
+      .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+      
+      /* Header moderne */
+      .email-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%); color: #ffffff; padding: 40px 30px; text-align: center; position: relative; }
+      .email-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>'); opacity: 0.3; }
+      
+      .brand-section { position: relative; z-index: 1; }
+      .brand-logo { width: 60px; height: 60px; border-radius: 16px; background: rgba(255, 255, 255, 0.2); display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 16px; backdrop-filter: blur(10px); }
+      .brand-name { font-weight: 700; font-size: 28px; letter-spacing: -0.5px; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+      .brand-subtitle { font-size: 16px; opacity: 0.9; margin: 8px 0 0 0; font-weight: 400; }
+      
+      /* Contenu principal */
+      .email-content { padding: 40px 30px; color: #333333; }
+      .greeting { font-size: 18px; margin: 0 0 24px 0; color: #333333; font-weight: 600; }
+      .intro-text { font-size: 16px; margin: 0 0 32px 0; color: #333333; line-height: 1.7; }
+      
+      /* Section d'informations */
+      .info-section { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 32px; margin: 32px 0; position: relative; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+      .info-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: #3b82f6; border-radius: 12px 12px 0 0; }
+      
+      .info-item { display: flex; align-items: center; margin: 18px 0; font-size: 16px; line-height: 1.6; }
+      .info-icon { font-size: 20px; margin-right: 16px; min-width: 24px; text-align: center; }
+      .info-label { font-weight: 600; color: #333333; margin-right: 8px; }
+      .info-value { color: #333333; font-weight: 500; }
+      
+      /* Bouton CTA */
+      .cta-section { text-align: center; margin: 40px 0; }
+      .cta-button { display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff; padding: 16px 32px; border-radius: 12px; font-weight: 600; text-decoration: none; font-size: 16px; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3); transition: all 0.3s ease; }
+      .cta-button:hover { background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); transform: translateY(-2px); }
+      
+      /* Footer professionnel */
+      .email-footer { background: #f8fafc; border-top: 1px solid #e5e7eb; padding: 32px 30px; text-align: center; }
+      .footer-content { color: #333333; font-size: 14px; line-height: 1.6; }
+      .footer-company { font-weight: 700; color: #333333; font-size: 16px; margin-bottom: 8px; }
+      .footer-contact { margin: 8px 0; }
+      .footer-contact a { color: #3b82f6; text-decoration: none; font-weight: 500; }
+      .footer-divider { height: 1px; background: #e5e7eb; margin: 20px 0; }
+      .footer-legal { font-size: 12px; color: #666666; margin-top: 16px; }
+      
+      /* Responsive design */
+      @media only screen and (max-width: 600px) {
+        .email-wrapper { padding: 10px 0; }
+        .email-container { margin: 0 10px; border-radius: 12px; }
+        .email-header { padding: 30px 20px; }
+        .brand-name { font-size: 24px; }
+        .brand-subtitle { font-size: 14px; }
+        .email-content { padding: 30px 20px; }
+        .info-section { padding: 24px 20px; margin: 24px 0; }
+        .info-item { font-size: 15px; margin: 16px 0; }
+        .info-icon { font-size: 18px; margin-right: 12px; }
+        .cta-button { padding: 14px 28px; font-size: 15px; }
+        .email-footer { padding: 24px 20px; }
+        .footer-content { font-size: 13px; }
+      }
+      
+      /* Support Outlook */
+      @media screen and (-webkit-min-device-pixel-ratio: 0) {
+        .email-container { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-wrapper">
+      <div class="email-container">
+        <!-- Header avec logo et nom -->
+        <div class="email-header">
+          <div class="brand-section">
+            {% if logo_url %}
+            <img src="{{ logo_url }}" width="60" height="60" alt="{{ app_name }}" style="border-radius: 16px; display: block; margin: 0 auto 16px auto;" />
+            {% else %}
+            <div class="brand-logo" style="display: inline-block;">🏢</div>
+            {% endif %}
+            <h1 class="brand-name">{{ app_name }}</h1>
+            <p class="brand-subtitle">Gestion de copropriété professionnelle</p>
+          </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="email-content">
+          {% block content %}{% endblock %}
+        </div>
+
+        <!-- Footer avec informations du syndic -->
+        <div class="email-footer">
+          <div class="footer-content">
+            <div class="footer-company">{{ syndic_name }}</div>
+            <div class="footer-contact">
+              📧 <a href="mailto:{{ syndic_contact_email }}">{{ syndic_contact_email }}</a>
+            </div>
+            <div class="footer-divider"></div>
+            <div class="footer-legal">
+              Cet email a été envoyé automatiquement par {{ app_name }}.<br>
+              Merci de ne pas répondre directement à cet email.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

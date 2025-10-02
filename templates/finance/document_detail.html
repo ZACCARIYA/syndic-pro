@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ document.title }} - Détails{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .detail-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(10deg); }
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border: none;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+    }
+    
+    .info-value {
+        font-weight: 500;
+        color: #1e293b;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .amount-highlight {
+        font-size: 2rem;
+        font-weight: 800;
+        text-align: center;
+        padding: 2rem;
+        border-radius: 15px;
+        margin: 1rem 0;
+    }
+    
+    .payment-section {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        border: 2px solid #bbf7d0;
+        text-align: center;
+    }
+    
+    .file-preview {
+        background: #f8fafc;
+        border: 2px dashed #cbd5e1;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .file-preview:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #667eea, #764ba2);
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.75rem;
+        top: 0.5rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #667eea;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Hero Section -->
+            <div class="detail-hero">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2">{{ document.title }}</h1>
+                        <p class="mb-0 opacity-75">
+                            Document pour {{ document.resident.get_full_name|default:document.resident.username }}
+                            {% if document.resident.apartment %} - Apt. {{ document.resident.apartment }}{% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="amount-highlight text-white">
+                            {{ document.amount|floatformat:2 }} DH
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations Principales -->
+            <div class="info-card">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-info-circle text-primary me-2"></i>Informations du Document
+                    </h5>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-tag text-info me-2"></i>Type de Document
+                        </div>
+                        <div class="info-value">
+                            <span class="status-badge
+                                {% if document.document_type == 'INVOICE' %}bg-danger text-white
+                                {% elif document.document_type == 'NOTICE' %}bg-info text-white
+                                {% elif document.document_type == 'REMINDER' %}bg-warning text-dark
+                                {% elif document.document_type == 'LEGAL' %}bg-dark text-white
+                                {% else %}bg-secondary text-white{% endif %}">
+                                {% if document.document_type == 'INVOICE' %}<i class="fas fa-file-invoice"></i>
+                                {% elif document.document_type == 'NOTICE' %}<i class="fas fa-bell"></i>
+                                {% elif document.document_type == 'REMINDER' %}<i class="fas fa-exclamation-triangle"></i>
+                                {% elif document.document_type == 'LEGAL' %}<i class="fas fa-gavel"></i>
+                                {% else %}<i class="fas fa-file"></i>{% endif %}
+                                {{ document.get_document_type_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar text-primary me-2"></i>Date du Document
+                        </div>
+                        <div class="info-value">
+                            {{ document.date|date:"l d F Y" }}
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-user text-success me-2"></i>Résident
+                        </div>
+                        <div class="info-value">
+                            {{ document.resident.get_full_name|default:document.resident.username }}
+                            {% if document.resident.apartment %}
+                            <span class="badge bg-light text-dark ms-2">Apt. {{ document.resident.apartment }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-coins text-warning me-2"></i>Montant
+                        </div>
+                        <div class="info-value">
+                            <span class="fs-4 fw-bold 
+                                {% if document.is_paid %}text-success
+                                {% elif document.is_overdue %}text-danger
+                                {% else %}text-warning{% endif %}">
+                                {{ document.amount|floatformat:2 }} DH
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-check-circle text-success me-2"></i>Statut de Paiement
+                        </div>
+                        <div class="info-value">
+                                {% if document.is_paid %}
+                            <span class="status-badge bg-success text-white">
+                                <i class="fas fa-check-circle"></i>Payé
+                            </span>
+                            {% elif document.is_overdue %}
+                            <span class="status-badge bg-danger text-white">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                En retard ({{ document.days_overdue }} jours)
+                            </span>
+                                {% else %}
+                            <span class="status-badge bg-warning text-dark">
+                                <i class="fas fa-clock"></i>En attente de paiement
+                            </span>
+                                {% endif %}
+                        </div>
+                    </div>
+
+                    {% if document.description %}
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-align-left text-secondary me-2"></i>Description
+                        </div>
+                        <div class="info-value">
+                            {{ document.description|linebreaks }}
+                        </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Fichier -->
+            {% if document.file %}
+            <div class="info-card">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-file text-primary me-2"></i>Fichier Joint
+                    </h5>
+                    <div class="file-preview">
+                        <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                        <h6>{{ document.file.name }}</h6>
+                        <p class="text-muted mb-3">Fichier du document</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="{{ document.file.url }}" target="_blank" class="btn btn-outline-primary">
+                                <i class="fas fa-eye me-2"></i>Visualiser
+                            </a>
+                            <a href="{{ document.file.url }}" download class="btn btn-primary">
+                                <i class="fas fa-download me-2"></i>Télécharger
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Section Paiement -->
+            {% if not document.is_paid and user == document.resident %}
+            <div class="payment-section">
+                <h5 class="text-success mb-3">
+                    <i class="fas fa-credit-card me-2"></i>Effectuer le Paiement
+                </h5>
+                <p class="text-muted mb-4">
+                    Ce document nécessite un paiement de <strong>{{ document.amount|floatformat:2 }} DH</strong>
+                </p>
+                <a href="{% url 'finance:payment_create' document.pk %}" class="btn btn-gradient-success btn-modern">
+                    <i class="fas fa-credit-card me-2"></i>Payer Maintenant
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Historique -->
+            <div class="info-card">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-history text-primary me-2"></i>Historique du Document
+                    </h5>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">Document créé</h6>
+                                    <p class="text-muted mb-0">
+                                        Par {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}
+                                    </p>
+                                </div>
+                                <small class="text-muted">{{ document.created_at|date:"d/m/Y à H:i" }}</small>
+                            </div>
+                        </div>
+                        
+                        {% if document.updated_at != document.created_at %}
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">Document modifié</h6>
+                                    <p class="text-muted mb-0">Dernière modification</p>
+                                </div>
+                                <small class="text-muted">{{ document.updated_at|date:"d/m/Y à H:i" }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if document.is_paid %}
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 text-success">Paiement effectué</h6>
+                                    <p class="text-muted mb-0">Document marqué comme payé</p>
+                                </div>
+                                <small class="text-muted">—</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="{% url 'finance:document_list' %}" class="btn btn-outline-secondary btn-modern">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la Liste
+                </a>
+                
+                {% if document.file %}
+                <a href="{{ document.file.url }}" target="_blank" class="btn btn-outline-primary btn-modern">
+                    <i class="fas fa-external-link-alt me-2"></i>Ouvrir le Fichier
+                </a>
+                {% endif %}
+                
+                {% if not document.is_paid and user == document.resident %}
+                <a href="{% url 'finance:payment_create' document.pk %}" class="btn btn-gradient-success btn-modern">
+                    <i class="fas fa-credit-card me-2"></i>Effectuer un Paiement
+                </a>
+                {% endif %}
+                
+                {% if user.role in 'SUPERADMIN,SYNDIC' %}
+                <button class="btn btn-outline-warning btn-modern" onclick="editDocument()">
+                    <i class="fas fa-edit me-2"></i>Modifier
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animation d'entrée
+        const cards = document.querySelectorAll('.info-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+    });
+    
+    function editDocument() {
+        // Redirection vers la page de modification (à implémenter si nécessaire)
+        alert('Fonctionnalité de modification à implémenter');
+    }
+</script>
+{% endblock %}

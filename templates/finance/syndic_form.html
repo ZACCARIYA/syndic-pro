@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if object %}Modifier le Syndic{% else %}Ajouter un Syndic{% endif %} - Syndic
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="fas fa-{% if object %}edit{% else %}user-tie{% endif %}"></i>
+        </div>
+        <div class="page-header-text">
+            <h1>{% if object %}Modifier le Syndic{% else %}Ajouter un Syndic{% endif %}</h1>
+            <p>{% if object %}Modifiez les informations du syndic{% else %}Créez un nouveau compte syndic{% endif %}</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'finance:syndic_management' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 gap-6">
+    <div class="modern-form">
+        <div class="form-header">
+            <h3>
+                <i class="fas fa-user-tie me-2"></i>
+                Informations du Syndic
+            </h3>
+            <p>Renseignez les informations du compte syndic</p>
+        </div>
+        
+        <form method="post" class="form-content">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}" class="form-label">
+                    <i class="fas fa-user me-2"></i>Nom d'utilisateur
+                    <span class="text-danger">*</span>
+                </label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="form-error">
+                        {% for error in form.username.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-help">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Nom d'utilisateur unique pour la connexion
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}" class="form-label">
+                    <i class="fas fa-envelope me-2"></i>Adresse email
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="form-error">
+                        {% for error in form.email.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-help">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Email pour les notifications et communications
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                        <i class="fas fa-user me-2"></i>Prénom
+                    </label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="form-error">
+                            {% for error in form.first_name.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                        <i class="fas fa-user me-2"></i>Nom de famille
+                    </label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="form-error">
+                            {% for error in form.last_name.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                    <i class="fas fa-phone me-2"></i>Numéro de téléphone
+                </label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    <div class="form-error">
+                        {% for error in form.phone.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-help">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Numéro de contact du syndic
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.address.id_for_label }}" class="form-label">
+                    <i class="fas fa-map-marker-alt me-2"></i>Adresse
+                </label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                    <div class="form-error">
+                        {% for error in form.address.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-help">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Adresse complète du syndic
+                </div>
+            </div>
+            
+            {% if form.is_active %}
+            <div class="form-group">
+                <div class="form-check">
+                    {{ form.is_active }}
+                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                        <i class="fas fa-check-circle me-2"></i>Compte actif
+                    </label>
+                </div>
+                {% if form.is_active.errors %}
+                    <div class="form-error">
+                        {% for error in form.is_active.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-help">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Désactivez pour bloquer l'accès au compte
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="form-actions">
+                <a href="{% url 'finance:syndic_management' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>
+                    {% if object %}Mettre à jour{% else %}Créer le syndic{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="info-section">
+        <div class="info-header">
+            <h3>
+                <i class="fas fa-info-circle me-2"></i>
+                Informations importantes
+            </h3>
+        </div>
+        
+        <div class="info-content">
+            <div class="info-item">
+                <h4>
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Rôle du syndic
+                </h4>
+                <p>Le syndic aura accès à toutes les fonctionnalités de gestion :</p>
+                <ul class="info-list">
+                    <li><i class="fas fa-check me-2"></i>Gestion des résidents</li>
+                    <li><i class="fas fa-check me-2"></i>Création de documents</li>
+                    <li><i class="fas fa-check me-2"></i>Envoi de notifications</li>
+                    <li><i class="fas fa-check me-2"></i>Suivi des paiements</li>
+                    <li><i class="fas fa-check me-2"></i>Tableau de bord complet</li>
+                </ul>
+            </div>
+            
+            <div class="info-item">
+                <h4>
+                    <i class="fas fa-key me-2"></i>
+                    Mot de passe
+                </h4>
+                <p>
+                    {% if object %}
+                        Le mot de passe ne peut pas être modifié ici. Utilisez la fonction de réinitialisation.
+                    {% else %}
+                        Un mot de passe par défaut sera généré : <code>syndic123</code>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="info-item">
+                <h4>
+                    <i class="fas fa-user-shield me-2"></i>
+                    Permissions
+                </h4>
+                <p>Le syndic pourra :</p>
+                <ul class="info-list">
+                    <li><i class="fas fa-check me-2"></i>Créer et gérer des résidents</li>
+                    <li><i class="fas fa-check me-2"></i>Envoyer des notifications</li>
+                    <li><i class="fas fa-check me-2"></i>Gérer les documents</li>
+                    <li><i class="fas fa-check me-2"></i>Consulter les statistiques</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add Bootstrap classes to form fields
+document.addEventListener('DOMContentLoaded', function() {
+    const formFields = document.querySelectorAll('input, textarea, select');
+    formFields.forEach(field => {
+        if (!field.classList.contains('form-check-input')) {
+            field.classList.add('form-control');
+        }
+    });
+});
+</script>
+{% endblock %}

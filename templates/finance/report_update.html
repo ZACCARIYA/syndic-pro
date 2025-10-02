@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier le Rapport - SyndicPro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- ===== EN-TÊTE DE PAGE ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">Modifier le Rapport</h2>
+                    <p class="text-muted mb-0">{{ object.title }}</p>
+                </div>
+                <div>
+                    <span class="badge bg-{{ object.get_status_display_color }} fs-6">
+                        Statut actuel : {{ object.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- ===== FORMULAIRE DE MODIFICATION ===== -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Modifier le Statut
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- ===== STATUT ===== -->
+                        <div class="mb-4">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                <i class="fas fa-flag me-2"></i>Nouveau Statut
+                            </label>
+                            <select class="form-select" id="{{ form.status.id_for_label }}" name="{{ form.status.name }}" required>
+                                <option value="">Sélectionnez un statut</option>
+                                <option value="NEW" {% if form.status.value == 'NEW' %}selected{% endif %}>Nouveau</option>
+                                <option value="IN_PROGRESS" {% if form.status.value == 'IN_PROGRESS' %}selected{% endif %}>En cours</option>
+                                <option value="RESOLVED" {% if form.status.value == 'RESOLVED' %}selected{% endif %}>Résolu</option>
+                                <option value="ARCHIVED" {% if form.status.value == 'ARCHIVED' %}selected{% endif %}>Archivé</option>
+                            </select>
+                            <div class="form-text">
+                                Choisissez le nouveau statut pour ce rapport.
+                            </div>
+                        </div>
+                        
+                        <!-- ===== BOUTONS ===== -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'finance:report_management' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Mettre à jour
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ===== INFORMATIONS DU RAPPORT ===== -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Informations du Rapport
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Titre :</strong>
+                        <p class="mb-0">{{ object.title }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Résident :</strong>
+                        <p class="mb-0">{{ object.resident.get_full_name|default:object.resident.username }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Catégorie :</strong>
+                        <p class="mb-0">
+                            <span class="badge bg-secondary">{{ object.get_category_display }}</span>
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Date de création :</strong>
+                        <p class="mb-0">{{ object.created_at|date:"d/m/Y à H:i" }}</p>
+                    </div>
+                    
+                    {% if object.location %}
+                    <div class="mb-3">
+                        <strong>Localisation :</strong>
+                        <p class="mb-0">
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ object.location }}
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <strong>Description :</strong>
+                        <p class="mb-0">{{ object.description|truncatewords:20 }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ===== COMMENTAIRES ===== -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Commentaires
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if comments %}
+                        {% for comment in comments %}
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ comment.author.get_full_name|default:comment.author.username }}</h6>
+                                        <small class="text-muted">{{ comment.created_at|date:"d/m/Y à H:i" }}</small>
+                                    </div>
+                                </div>
+                                <p class="mb-0 mt-1">{{ comment.comment|truncatewords:15 }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="text-center">
+                            <a href="{% url 'finance:report_detail' object.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>Voir tous les commentaires
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="fas fa-comments fa-2x mb-3"></i>
+                            <p>Aucun commentaire pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validation du formulaire
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

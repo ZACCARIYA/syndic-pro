@@ -1,0 +1,513 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nouvelle Notification{% endblock %}
+
+{% block content %}
+<!-- ===== EN-TÊTE DE PAGE ===== -->
+{% include 'components/page_header.html' with title="Nouvelle Notification" subtitle="Créer et envoyer une notification aux résidents" icon="fas fa-bell" actions=page_actions|default:None %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- ===== FORMULAIRE PRINCIPAL ===== -->
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-paper-plane me-2"></i>Informations de la Notification
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+
+                    <form method="post" id="notificationForm" class="modern-form">
+                        {% csrf_token %}
+                        
+                        <!-- ===== TITRE ET PRIORITÉ ===== -->
+                        <div class="row">
+                            <div class="col-md-8">
+                                {% include 'components/form_field.html' with field=form.title label="Titre de la Notification" icon="fas fa-heading" required=True %}
+                            </div>
+                            <div class="col-md-4">
+                                {% include 'components/form_field.html' with field=form.priority label="Priorité" icon="fas fa-exclamation-circle" required=True %}
+                            </div>
+                        </div>
+
+                        <!-- ===== TYPE ET MESSAGE ===== -->
+                        {% include 'components/form_field.html' with field=form.notification_type label="Type de Notification" icon="fas fa-tag" required=True %}
+                        
+                        {% include 'components/form_field.html' with field=form.message label="Message" icon="fas fa-align-left" required=True help_text="Le message qui sera envoyé aux résidents" %}
+                        
+                        {% include 'components/form_field.html' with field=form.recipients label="Destinataires" icon="fas fa-users" required=True help_text="Sélectionnez les résidents qui recevront cette notification" %}
+
+                        <!-- ===== OPTIONS DE COMMUNICATION ===== -->
+                        <div class="card-modern mt-4">
+                            <div class="card-header-modern">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-paper-plane me-2"></i>Options de Communication
+                                </h6>
+                            </div>
+                            <div class="card-body-modern">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch modern-switch">
+                                            <input class="form-check-input" type="checkbox" id="sendSms" name="send_sms">
+                                            <label class="form-check-label" for="sendSms">
+                                                <i class="fas fa-sms me-2 text-primary"></i>Envoyer par SMS
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Envoie un SMS aux résidents ayant un numéro de téléphone</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch modern-switch">
+                                            <input class="form-check-input" type="checkbox" id="sendEmail" name="send_email">
+                                            <label class="form-check-label" for="sendEmail">
+                                                <i class="fas fa-envelope me-2 text-info"></i>Envoyer par Email
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Envoie un email aux résidents ayant une adresse email</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== ACTIONS DU FORMULAIRE ===== -->
+                        <div class="form-actions mt-4">
+                            <a href="{% url 'finance:notification_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer la Notification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- ===== TYPES DE NOTIFICATIONS ===== -->
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Types de Notifications
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+                    <div class="notification-types">
+                        <div class="type-item">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                            <div>
+                                <strong>Rappel de paiement</strong>
+                                <small>Rappels pour les documents en retard</small>
+                            </div>
+                        </div>
+                        <div class="type-item">
+                            <i class="fas fa-file-alt text-primary"></i>
+                            <div>
+                                <strong>Nouveau document</strong>
+                                <small>Notification d'un nouveau document</small>
+                            </div>
+                        </div>
+                        <div class="type-item">
+                            <i class="fas fa-bullhorn text-info"></i>
+                            <div>
+                                <strong>Annonce générale</strong>
+                                <small>Informations générales</small>
+                            </div>
+                        </div>
+                        <div class="type-item">
+                            <i class="fas fa-users text-success"></i>
+                            <div>
+                                <strong>Convocation réunion</strong>
+                                <small>Invitations aux réunions</small>
+                            </div>
+                        </div>
+                        <div class="type-item">
+                            <i class="fas fa-gavel text-danger"></i>
+                            <div>
+                                <strong>Avis légal</strong>
+                                <small>Notifications légales</small>
+                            </div>
+                        </div>
+                        <div class="type-item">
+                            <i class="fas fa-ellipsis-h text-secondary"></i>
+                            <div>
+                                <strong>Autre</strong>
+                                <small>Autres types de notifications</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== NIVEAUX DE PRIORITÉ ===== -->
+            <div class="card-modern mt-4">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>Niveaux de Priorité
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+                    <div class="priority-levels">
+                        <div class="priority-item">
+                            <div class="priority-indicator bg-success"></div>
+                            <div>
+                                <strong>Faible</strong>
+                                <small>Informations générales</small>
+                            </div>
+                        </div>
+                        <div class="priority-item">
+                            <div class="priority-indicator bg-warning"></div>
+                            <div>
+                                <strong>Moyenne</strong>
+                                <small>Rappels importants</small>
+                            </div>
+                        </div>
+                        <div class="priority-item">
+                            <div class="priority-indicator bg-danger"></div>
+                            <div>
+                                <strong>Élevée</strong>
+                                <small>Urgences</small>
+                            </div>
+                        </div>
+                        <div class="priority-item">
+                            <div class="priority-indicator bg-dark"></div>
+                            <div>
+                                <strong>Urgente</strong>
+                                <small>Situations critiques</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== RÉSIDENTS DISPONIBLES ===== -->
+            <div class="card-modern mt-4">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Résidents Disponibles
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+                    <div class="resident-selection">
+                        <div class="selection-actions mb-3">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAll()">
+                                <i class="fas fa-check-double me-1"></i>Tout sélectionner
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectNone()">
+                                <i class="fas fa-times me-1"></i>Tout désélectionner
+                            </button>
+                        </div>
+                        <div class="residents-list">
+                            {% for resident in residents %}
+                                <div class="resident-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input resident-checkbox" type="checkbox" 
+                                               value="{{ resident.id }}" id="resident_{{ resident.id }}">
+                                        <label class="form-check-label" for="resident_{{ resident.id }}">
+                                            <div class="resident-info">
+                                                <div class="resident-name">{{ resident.get_full_name|default:resident.username }}</div>
+                                                {% if resident.apartment %}
+                                                    <div class="resident-apartment">{{ resident.apartment }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== STYLES MODERNES POUR NOTIFICATION FORM ===== */
+
+.notification-types {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.type-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--light-bg, #f8f9fa);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.type-item:hover {
+    background: var(--primary-50, #e3f2fd);
+    transform: translateX(4px);
+}
+
+.type-item i {
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+}
+
+.type-item div {
+    flex: 1;
+}
+
+.type-item strong {
+    display: block;
+    color: var(--text-dark, #212529);
+    font-size: 0.9rem;
+}
+
+.type-item small {
+    color: var(--text-muted, #6c757d);
+    font-size: 0.8rem;
+}
+
+.priority-levels {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.priority-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.priority-item:hover {
+    background: var(--light-bg, #f8f9fa);
+}
+
+.priority-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.priority-item strong {
+    display: block;
+    color: var(--text-dark, #212529);
+    font-size: 0.9rem;
+}
+
+.priority-item small {
+    color: var(--text-muted, #6c757d);
+    font-size: 0.8rem;
+}
+
+.resident-selection {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.residents-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resident-item {
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.resident-item:hover {
+    background: var(--light-bg, #f8f9fa);
+}
+
+.resident-item.selected {
+    background: var(--primary-50, #e3f2fd);
+    border: 1px solid var(--primary-200, #bbdefb);
+}
+
+.resident-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.resident-name {
+    font-weight: 500;
+    color: var(--text-dark, #212529);
+    font-size: 0.9rem;
+}
+
+.resident-apartment {
+    color: var(--text-muted, #6c757d);
+    font-size: 0.8rem;
+}
+
+.modern-switch .form-check-input {
+    width: 2.5rem;
+    height: 1.25rem;
+    border-radius: 1rem;
+    background-color: var(--border-color, #dee2e6);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.modern-switch .form-check-input:checked {
+    background-color: var(--primary-500, #0d6efd);
+    border-color: var(--primary-500, #0d6efd);
+}
+
+.modern-switch .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.selection-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notification-types,
+    .priority-levels {
+        gap: 0.5rem;
+    }
+    
+    .type-item,
+    .priority-item {
+        padding: 0.5rem;
+    }
+}
+</style>
+
+<script>
+// ===== GESTION DES RÉSIDENTS =====
+function selectAll() {
+    const checkboxes = document.querySelectorAll('.resident-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+        checkbox.closest('.resident-item').classList.add('selected');
+    });
+    updateRecipientsField();
+    updateSelectionCount();
+}
+
+function selectNone() {
+    const checkboxes = document.querySelectorAll('.resident-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+        checkbox.closest('.resident-item').classList.remove('selected');
+    });
+    updateRecipientsField();
+    updateSelectionCount();
+}
+
+function updateRecipientsField() {
+    const checkboxes = document.querySelectorAll('.resident-checkbox:checked');
+    const recipientsField = document.getElementById('id_recipients');
+    const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (recipientsField) {
+        // Clear existing selections
+        Array.from(recipientsField.options).forEach(option => {
+            option.selected = false;
+        });
+        
+        // Select the checked residents
+        selectedValues.forEach(value => {
+            const option = recipientsField.querySelector(`option[value="${value}"]`);
+            if (option) {
+                option.selected = true;
+            }
+        });
+    }
+}
+
+function updateSelectionCount() {
+    const selectedCount = document.querySelectorAll('.resident-checkbox:checked').length;
+    const totalCount = document.querySelectorAll('.resident-checkbox').length;
+    
+    // Update selection info if element exists
+    const selectionInfo = document.getElementById('selection-info');
+    if (selectionInfo) {
+        selectionInfo.textContent = `${selectedCount} sur ${totalCount} résidents sélectionnés`;
+    }
+}
+
+// ===== INITIALISATION =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to checkboxes
+    const checkboxes = document.querySelectorAll('.resident-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const residentItem = this.closest('.resident-item');
+            if (this.checked) {
+                residentItem.classList.add('selected');
+            } else {
+                residentItem.classList.remove('selected');
+            }
+            updateRecipientsField();
+            updateSelectionCount();
+        });
+    });
+    
+    // Initialize
+    updateRecipientsField();
+    updateSelectionCount();
+    
+    // Form validation
+    const form = document.getElementById('notificationForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const selectedRecipients = document.querySelectorAll('.resident-checkbox:checked');
+            if (selectedRecipients.length === 0) {
+                e.preventDefault();
+                
+                // Show modern alert
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-warning alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Veuillez sélectionner au moins un résident.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                // Insert at the top of the form
+                form.insertBefore(alertDiv, form.firstChild);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 5000);
+                
+                return false;
+            }
+            
+            // Update recipients before submission
+            updateRecipientsField();
+        });
+    }
+    
+    // Add smooth animations
+    const cards = document.querySelectorAll('.card-modern');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

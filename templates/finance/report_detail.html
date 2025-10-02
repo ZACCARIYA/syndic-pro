@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ report.title }} - SyndicPro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- ===== EN-TÊTE DE PAGE ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">{{ report.title }}</h2>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-user me-2"></i>{{ report.resident.get_full_name|default:report.resident.username }}
+                        <span class="mx-2">•</span>
+                        <i class="fas fa-calendar me-2"></i>{{ report.created_at|date:"d/m/Y à H:i" }}
+                    </p>
+                </div>
+                <div>
+                    <span class="badge bg-{{ report.get_status_display_color }} fs-6">
+                        {{ report.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- ===== INFORMATIONS PRINCIPALES ===== -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Détails du Rapport
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Catégorie :</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            <span class="badge bg-secondary">{{ report.get_category_display }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if report.location %}
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Localisation :</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            <i class="fas fa-map-marker-alt me-2"></i>{{ report.location }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Description :</strong>
+                            <div class="mt-2">
+                                {{ report.description|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ===== PHOTO ===== -->
+            {% if report.photo %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-camera me-2"></i>Photo du Rapport
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ report.photo.url }}" alt="Photo du rapport" class="img-fluid rounded" style="max-height: 400px;">
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- ===== COMMENTAIRES ===== -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Commentaires
+                    </h5>
+                    <a href="{% url 'finance:report_comment' report.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Ajouter un commentaire
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if report.comments.all %}
+                        {% for comment in report.comments.all %}
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ comment.author.get_full_name|default:comment.author.username }}</h6>
+                                        <small class="text-muted">{{ comment.created_at|date:"d/m/Y à H:i" }}</small>
+                                    </div>
+                                    {% if comment.is_internal %}
+                                    <span class="badge bg-warning">Interne</span>
+                                    {% endif %}
+                                </div>
+                                <p class="mb-0 mt-2">{{ comment.comment|linebreaks }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-comments fa-2x mb-3"></i>
+                            <p>Aucun commentaire pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- ===== INFORMATIONS LATERALES ===== -->
+        <div class="col-lg-4">
+            <!-- ===== ACTIONS ===== -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'finance:report_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                        </a>
+                        
+                        {% if user.role in 'SYNDIC,SUPERADMIN' %}
+                        <a href="{% url 'finance:report_update' report.pk %}" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>Modifier le statut
+                        </a>
+                        {% endif %}
+                        
+                        {% if user.role == 'RESIDENT' and report.resident == user %}
+                        <a href="{% url 'finance:report_comment' report.pk %}" class="btn btn-primary">
+                            <i class="fas fa-comment me-2"></i>Ajouter un commentaire
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ===== INFORMATIONS DE SUIVI ===== -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Suivi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Rapport créé</h6>
+                                <p class="text-muted mb-0">{{ report.created_at|date:"d/m/Y à H:i" }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if report.reviewed_by %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-{{ report.get_status_display_color }}"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Statut modifié</h6>
+                                <p class="text-muted mb-0">
+                                    Par {{ report.reviewed_by.get_full_name|default:report.reviewed_by.username }}
+                                    le {{ report.reviewed_at|date:"d/m/Y à H:i" }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if report.updated_at != report.created_at %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Dernière modification</h6>
+                                <p class="text-muted mb-0">{{ report.updated_at|date:"d/m/Y à H:i" }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #dee2e6;
+}
+</style>
+{% endblock %}

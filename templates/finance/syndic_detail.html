@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ syndic.username }} - Détails du Syndic{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="page-header-text">
+            <h1>{{ syndic.get_full_name|default:syndic.username }}</h1>
+            <p>Détails et activité du syndic</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'finance:syndic_update' syndic.pk %}" class="btn btn-primary">
+            <i class="fas fa-edit me-2"></i>Modifier
+        </a>
+        <a href="{% url 'finance:syndic_management' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 gap-6">
+    <!-- Syndic Information -->
+    <div class="modern-form">
+        <div class="form-header">
+            <h3>
+                <i class="fas fa-user-tie me-2"></i>
+                Informations du Syndic
+            </h3>
+        </div>
+        
+        <div class="form-content">
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-user me-2"></i>Nom d'utilisateur
+                </label>
+                <div class="form-control-plaintext">{{ syndic.username }}</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-envelope me-2"></i>Email
+                </label>
+                <div class="form-control-plaintext">
+                    {% if syndic.email %}
+                        <a href="mailto:{{ syndic.email }}" class="text-decoration-none">
+                            {{ syndic.email }}
+                        </a>
+                    {% else %}
+                        <span class="text-muted">Non renseigné</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-user me-2"></i>Prénom
+                    </label>
+                    <div class="form-control-plaintext">
+                        {{ syndic.first_name|default:"Non renseigné" }}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-user me-2"></i>Nom de famille
+                    </label>
+                    <div class="form-control-plaintext">
+                        {{ syndic.last_name|default:"Non renseigné" }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-phone me-2"></i>Téléphone
+                </label>
+                <div class="form-control-plaintext">
+                    {% if syndic.phone %}
+                        <a href="tel:{{ syndic.phone }}" class="text-decoration-none">
+                            {{ syndic.phone }}
+                        </a>
+                    {% else %}
+                        <span class="text-muted">Non renseigné</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-map-marker-alt me-2"></i>Adresse
+                </label>
+                <div class="form-control-plaintext">
+                    {{ syndic.address|default:"Non renseigné" }}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-toggle-on me-2"></i>Statut du compte
+                </label>
+                <div class="form-control-plaintext">
+                    {% if syndic.is_active %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check me-1"></i>Actif
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger">
+                            <i class="fas fa-times me-1"></i>Inactif
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-calendar me-2"></i>Date de création
+                </label>
+                <div class="form-control-plaintext">
+                    {{ syndic.date_joined|date:"d/m/Y à H:i" }}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-clock me-2"></i>Dernière connexion
+                </label>
+                <div class="form-control-plaintext">
+                    {% if syndic.last_login %}
+                        {{ syndic.last_login|date:"d/m/Y à H:i" }}
+                    {% else %}
+                        <span class="text-muted">Jamais connecté</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity Statistics -->
+    <div class="info-section">
+        <div class="info-header">
+            <h3>
+                <i class="fas fa-chart-bar me-2"></i>
+                Statistiques d'activité
+            </h3>
+        </div>
+        
+        <div class="info-content">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ documents_created }}</div>
+                    <div class="stat-label">Documents créés</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ notifications_sent }}</div>
+                    <div class="stat-label">Notifications envoyées</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ residents_managed }}</div>
+                    <div class="stat-label">Résidents gérés</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="modern-form">
+    <div class="form-header">
+        <h3>
+            <i class="fas fa-history me-2"></i>
+            Activité récente
+        </h3>
+        <p>Dernières actions effectuées par ce syndic</p>
+    </div>
+    
+    <div class="form-content">
+        <div class="grid grid-cols-2 gap-6">
+            <!-- Recent Documents -->
+            <div>
+                <h4>
+                    <i class="fas fa-file-alt me-2"></i>
+                    Derniers documents créés
+                </h4>
+                {% if recent_documents %}
+                    <div class="list-group">
+                        {% for document in recent_documents %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ document.title }}</h6>
+                                    <p class="mb-1 text-muted">{{ document.description|truncatechars:50 }}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ document.created_at|date:"d/m/Y" }}
+                                        <i class="fas fa-euro-sign me-1 ms-2"></i>
+                                        {{ document.amount }} DH
+                                    </small>
+                                </div>
+                                <span class="badge bg-{% if document.is_paid %}success{% else %}warning{% endif %}">
+                                    {% if document.is_paid %}Payé{% else %}En attente{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <p>Aucun document créé</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Recent Notifications -->
+            <div>
+                <h4>
+                    <i class="fas fa-bell me-2"></i>
+                    Dernières notifications envoyées
+                </h4>
+                {% if recent_notifications %}
+                    <div class="list-group">
+                        {% for notification in recent_notifications %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ notification.title }}</h6>
+                                    <p class="mb-1 text-muted">{{ notification.message|truncatechars:50 }}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ notification.created_at|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-{% if notification.is_active %}success{% else %}secondary{% endif %}">
+                                    {% if notification.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <p>Aucune notification envoyée</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

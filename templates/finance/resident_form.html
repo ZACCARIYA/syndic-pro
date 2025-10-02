@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if object %}Modifier le Résident{% else %}Ajouter un Résident{% endif %} - Syndic
+{% endblock %}
+
+{% block content %}
+<!-- ===== EN-TÊTE DE PAGE ===== -->
+{% include 'components/page_header.html' with title=object|yesno:"Modifier le Résident,Ajouter un Résident" subtitle="Gérer les informations du résident" icon=object|yesno:"fas fa-edit,fas fa-user-plus" actions=page_actions|default:None %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- ===== FORMULAIRE PRINCIPAL ===== -->
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Informations du Résident
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+                    <form method="post" class="modern-form">
+                        {% csrf_token %}
+                        
+                        <!-- ===== NOM D'UTILISATEUR ET EMAIL ===== -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.username label="Nom d'utilisateur" icon="fas fa-user" required=True %}
+                            </div>
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.email label="Email" icon="fas fa-envelope" %}
+                            </div>
+                        </div>
+                        
+                        <!-- ===== PRÉNOM ET NOM ===== -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.first_name label="Prénom" icon="fas fa-user" %}
+                            </div>
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.last_name label="Nom de famille" icon="fas fa-user" %}
+                            </div>
+                        </div>
+                        
+                        <!-- ===== TÉLÉPHONE ET APPARTEMENT ===== -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.phone label="Téléphone" icon="fas fa-phone" %}
+                            </div>
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.apartment label="Appartement" icon="fas fa-home" required=True help_text="Chaque appartement ne peut avoir qu'un seul résident" %}
+                            </div>
+                        </div>
+                        
+                        <!-- ===== ADRESSE ===== -->
+                        {% include 'components/form_field.html' with field=form.address label="Adresse" icon="fas fa-map-marker-alt" %}
+                        
+                        <!-- ===== STATUT ACTIF ===== -->
+                        {% if form.is_active %}
+                        <div class="form-check form-switch modern-switch mb-4">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                <i class="fas fa-toggle-on me-2"></i>Compte actif
+                            </label>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- ===== ACTIONS DU FORMULAIRE ===== -->
+                        <div class="form-actions">
+                            <a href="{% url 'finance:resident_management' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                {% if object %}Mettre à jour{% else %}Créer le résident{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- ===== INFORMATIONS ===== -->
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Informations
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+                    <div class="info-section">
+                        <h6 class="info-title">
+                            <i class="fas fa-user-tag me-2"></i>Rôle du résident
+                        </h6>
+                        <p class="info-text">
+                            Le résident aura accès uniquement à ses propres données (cotisations, paiements, notifications).
+                        </p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h6 class="info-title">
+                            <i class="fas fa-key me-2"></i>Mot de passe
+                        </h6>
+                        <p class="info-text">
+                            {% if object %}
+                                Le mot de passe ne peut pas être modifié ici. Utilisez la fonction de réinitialisation.
+                            {% else %}
+                                Un mot de passe par défaut sera généré : <code class="password-code">resident123</code>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h6 class="info-title">
+                            <i class="fas fa-home me-2"></i>Appartement
+                        </h6>
+                        <p class="info-text">
+                            Indiquez le numéro ou nom de l'appartement (ex: A1, 2B, etc.)
+                            <br><strong>Important :</strong> Chaque appartement ne peut avoir qu'un seul résident.
+                        </p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h6 class="info-title">
+                            <i class="fas fa-user-tie me-2"></i>Créateur
+                        </h6>
+                        <p class="info-text">
+                            Ce résident sera créé par : <strong>{{ creator.get_full_name|default:creator.username }}</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== STYLES MODERNES POUR RESIDENT FORM ===== */
+
+.info-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color, #e9ecef);
+}
+
+.info-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.info-title {
+    color: var(--primary-600, #0a58ca);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.info-text {
+    color: var(--text-muted, #6c757d);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+.password-code {
+    background: var(--danger-100, #f8d7da);
+    color: var(--danger-800, #721c24);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.modern-switch .form-check-input {
+    width: 2.5rem;
+    height: 1.25rem;
+    border-radius: 1rem;
+    background-color: var(--border-color, #dee2e6);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.modern-switch .form-check-input:checked {
+    background-color: var(--primary-500, #0d6efd);
+    border-color: var(--primary-500, #0d6efd);
+}
+
+.modern-switch .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color, #e9ecef);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

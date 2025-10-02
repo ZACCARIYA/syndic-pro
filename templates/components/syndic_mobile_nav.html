@@ -1,0 +1,33 @@
+<!-- ===== NAVIGATION MOBILE SYNDIC ORGANISÉE ===== -->
+<div class="syndic-mobile-nav">
+    <!-- ===== NAVIGATION PRINCIPALE MOBILE ===== -->
+    <div class="mobile-nav-grid">
+        <!-- 🏠 Tableau de Bord (PRIORITÉ 1) -->
+        <a href="{% url 'finance:syndic_dashboard' %}" class="mobile-nav-item mobile-nav-primary">
+            <div class="mobile-nav-icon">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <span class="mobile-nav-label">Tableau de Bord</span>
+        </a>
+        
+        
+        
+        <!-- 📅 Planning (PRIORITÉ 5) -->
+        <a href="{% url 'finance:calendar' %}" class="mobile-nav-item">
+            <div class="mobile-nav-icon">
+                <i class="fas fa-calendar"></i>
+            </div>
+            <span class="mobile-nav-label">Planning</span>
+        </a>
+        
+        <!-- 📊 Rapports (PRIORITÉ 6) -->
+        <a href="{% url 'finance:report_list' %}" class="mobile-nav-item">
+            <div class="mobile-nav-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <span class="mobile-nav-label">Rapports</span>
+        </a>
+        
+    </div>
+    
+</div>

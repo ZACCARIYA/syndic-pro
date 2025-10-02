@@ -1,0 +1,71 @@
+{% extends 'emails/base.html' %}
+{% block content %}
+  <p class="greeting">Bonjour {{ resident_name }},</p>
+
+  {% if intro_text %}
+    <p class="intro-text">{{ intro_text }}</p>
+  {% else %}
+    <p class="intro-text">Vous avez reçu une nouvelle notification importante concernant votre copropriété.</p>
+  {% endif %}
+
+  <div class="info-section">
+    {% if notification_type %}
+    <div class="info-item">
+      <span class="info-icon">🏷️</span>
+      <span class="info-label">Type :</span>
+      <span class="info-value">{{ notification_type }}</span>
+    </div>
+    {% endif %}
+    
+    {% if priority %}
+    <div class="info-item">
+      <span class="info-icon">⚡</span>
+      <span class="info-label">Priorité :</span>
+      <span class="info-value">{{ priority }}</span>
+    </div>
+    {% endif %}
+    
+    {% if amount %}
+    <div class="info-item">
+      <span class="info-icon">💰</span>
+      <span class="info-label">Montant :</span>
+      <span class="info-value">{{ amount }} DH</span>
+    </div>
+    {% endif %}
+    
+    {% if date %}
+    <div class="info-item">
+      <span class="info-icon">📅</span>
+      <span class="info-label">Date :</span>
+      <span class="info-value">{{ date }}</span>
+    </div>
+    {% endif %}
+    
+    {% if message %}
+    <div class="info-item">
+      <span class="info-icon">📝</span>
+      <span class="info-label">Message :</span>
+      <span class="info-value">{{ message }}</span>
+    </div>
+    {% endif %}
+    
+    {% if link %}
+    <div class="info-item">
+      <span class="info-icon">🔗</span>
+      <span class="info-label">Lien :</span>
+      <span class="info-value"><a href="{{ link }}" target="_blank" rel="noopener" style="color: #3b82f6; text-decoration: none;">{{ link }}</a></span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if link %}
+  <div class="cta-section">
+    <a href="{{ link }}" target="_blank" rel="noopener" class="cta-button">Accéder au document</a>
+  </div>
+  {% endif %}
+
+  <p style="margin-top: 40px; font-size: 16px; color: #333333; line-height: 1.7;">
+    Merci de votre confiance,<br>
+    <strong>L'équipe {{ app_name }}</strong>
+  </p>
+{% endblock %}

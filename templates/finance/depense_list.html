@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Dépenses{% endblock %}
+
+{% block content %}
+<!-- ===== EN-TÊTE DE PAGE ===== -->
+{% include 'components/page_header.html' with title="Gestion des Dépenses" subtitle="Transparence financière pour tous" icon="fas fa-receipt" actions=page_actions %}
+
+<div class="container">
+    <!-- ===== FILTRES ===== -->
+    <section class="filters-section mb-5">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>Filtres et Recherche
+                </h5>
+            </div>
+            <div class="card-body-modern">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        {% include 'components/form_field.html' with field=category_field label="Catégorie" %}
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar text-primary"></i>Date début
+                            </label>
+                            <input type="date" name="date_debut" class="form-control" value="{{ request.GET.date_debut }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar text-primary"></i>Date fin
+                            </label>
+                            <input type="date" name="date_fin" class="form-control" value="{{ request.GET.date_fin }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="d-flex gap-2 w-100">
+                            <button type="submit" class="btn-modern btn-primary flex-grow-1">
+                                <i class="fas fa-search"></i>Filtrer
+                            </button>
+                            <a href="{% url 'finance:depense_list' %}" class="btn-modern btn-outline">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== STATISTIQUES ===== -->
+    <section class="stats-section mb-5">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                {% include 'components/stats_card.html' with value=total_depenses|floatformat:2 label="Total Dépenses (DH)" icon="fas fa-coins" color="info" %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {% include 'components/stats_card.html' with value=depenses|length label="Nombre de Dépenses" icon="fas fa-list" color="success" %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {% include 'components/stats_card.html' with value=depense_moyenne|floatformat:2 label="Dépense Moyenne (DH)" icon="fas fa-chart-line" color="warning" %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== GRAPHIQUES (RÉSIDENTS SEULEMENT) ===== -->
+    {% if user.role == 'RESIDENT' and chart_data %}
+    <section class="charts-section mb-5">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <h5 class="chart-title">
+                        <i class="fas fa-chart-pie text-primary"></i>
+                        Répartition par Catégorie
+                    </h5>
+                    {% if chart_data.categories %}
+                    <div class="chart-wrapper">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-chart-pie fa-3x mb-3"></i>
+                        <h6>Aucune donnée</h6>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <h5 class="chart-title">
+                        <i class="fas fa-chart-bar text-success"></i>
+                        Évolution Mensuelle
+                    </h5>
+                    {% if chart_data.monthly %}
+                    <div class="chart-wrapper">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                        <h6>Aucune donnée</h6>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ===== LISTE DES DÉPENSES ===== -->
+    <section class="expenses-section">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste des Dépenses
+                    </h5>
+                    <span class="badge-modern badge-light">
+                        {% if can_manage %}
+                        <i class="fas fa-cog me-1"></i>Mode Gestion
+                        {% else %}
+                        <i class="fas fa-eye me-1"></i>Mode Consultation
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body-modern">
+                {% if depenses %}
+                <div class="row">
+                    {% for depense in depenses %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="expense-card">
+                            <div class="expense-header">
+                                <h6 class="expense-title">{{ depense.titre }}</h6>
+                                <span class="badge-modern badge-{{ depense.categorie|lower }}">
+                                    {{ depense.get_categorie_display }}
+                                </span>
+                            </div>
+                            
+                            {% if depense.description %}
+                            <p class="expense-description">{{ depense.description|truncatewords:15 }}</p>
+                            {% endif %}
+                            
+                            <div class="expense-footer">
+                                <div class="expense-amount">{{ depense.montant|floatformat:2 }} DH</div>
+                                <div class="expense-date">{{ depense.date_depense|date:"d/m/Y" }}</div>
+                            </div>
+                            
+                            <div class="expense-actions">
+                                <a href="{% url 'finance:depense_detail' depense.pk %}" class="btn-modern btn-outline btn-sm">
+                                    <i class="fas fa-eye"></i>Détails
+                                </a>
+                                {% if can_manage %}
+                                <a href="{% url 'finance:depense_update' depense.pk %}" class="btn-modern btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i>Modifier
+                                </a>
+                                {% endif %}
+                            </div>
+                            
+                            {% if depense.is_grosse_depense %}
+                            <div class="expense-badge">
+                                <span class="badge-modern badge-danger">
+                                    <i class="fas fa-exclamation-triangle"></i>Grosse Dépense
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav class="pagination-nav mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                {% else %}
+                <div class="empty-state text-center py-5">
+                    <i class="fas fa-receipt fa-4x text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucune dépense trouvée</h5>
+                    {% if can_manage %}
+                    <p class="text-muted mb-4">Commencez par ajouter une nouvelle dépense.</p>
+                    <a href="{% url 'finance:depense_create' %}" class="btn-modern btn-primary">
+                        <i class="fas fa-plus"></i>Ajouter une Dépense
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== STYLES SPÉCIFIQUES AUX DÉPENSES ===== */
+.expense-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    padding: var(--spacing-4);
+    transition: var(--transition);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.expense-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.expense-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: var(--spacing-3);
+}
+
+.expense-title {
+    color: var(--primary);
+    font-weight: 600;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.expense-description {
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-3);
+    flex-grow: 1;
+}
+
+.expense-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-3);
+}
+
+.expense-amount {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--success);
+}
+
+.expense-date {
+    font-size: var(--font-size-sm);
+    color: var(--gray-500);
+}
+
+.expense-actions {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
+}
+
+.expense-badge {
+    margin-top: auto;
+}
+
+/* Badges par catégorie */
+.badge-entretien { background: var(--info-bg); color: var(--info); }
+.badge-reparation { background: var(--warning-bg); color: var(--warning); }
+.badge-facture { background: var(--success-bg); color: var(--success); }
+.badge-autre { background: var(--secondary-bg); color: var(--secondary); }
+
+/* Pagination moderne */
+.pagination-nav .page-link {
+    border: none;
+    border-radius: var(--radius-full);
+    margin: 0 var(--spacing-1);
+    color: var(--gray-600);
+    transition: var(--transition);
+}
+
+.pagination-nav .page-link:hover {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.pagination-nav .page-item.active .page-link {
+    background: var(--primary);
+    color: var(--white);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{% if user.role == 'RESIDENT' and chart_data %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===== DONNÉES DES GRAPHIQUES =====
+    const chartData = {{ chart_data_json|safe }};
+    
+    if (!chartData) return;
+
+    // ===== GRAPHIQUE CATÉGORIES =====
+    const categoryCtx = document.getElementById('categoryChart');
+    if (categoryCtx && chartData.categories && chartData.categories.length > 0) {
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: chartData.categories.map(item => item.categorie),
+                datasets: [{
+                    data: chartData.categories.map(item => item.montant),
+                    backgroundColor: ['#667eea', '#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 20, usePointStyle: true }
+                    }
+                }
+            }
+        });
+    }
+
+    // ===== GRAPHIQUE MENSUEL =====
+    const monthlyCtx = document.getElementById('monthlyChart');
+    if (monthlyCtx && chartData.monthly && chartData.monthly.length > 0) {
+        const monthsWithData = chartData.monthly.filter(item => item.total > 0);
+        
+        if (monthsWithData.length > 0) {
+            new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: monthsWithData.map(item => item.month),
+                    datasets: [{
+                        data: monthsWithData.map(item => item.total),
+                        backgroundColor: '#667eea',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' DH';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

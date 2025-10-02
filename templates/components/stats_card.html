@@ -1,0 +1,26 @@
+<!-- ===== COMPOSANT CARTE STATISTIQUE ===== -->
+
+<div class="stats-card {% if class %}{{ class }}{% endif %}">
+    {% if icon %}
+    <div class="stats-icon bg-{{ color|default:'primary' }}">
+        <i class="{{ icon }}"></i>
+    </div>
+    {% endif %}
+    
+    <div class="stats-value text-{{ color|default:'primary' }}">
+        {{ value|default:'0' }}
+    </div>
+    
+    <div class="stats-label">
+        {{ label }}
+    </div>
+    
+    {% if trend %}
+    <div class="stats-trend mt-2">
+        <small class="text-{{ trend.type|default:'muted' }}">
+            <i class="fas fa-arrow-{{ trend.direction|default:'up' }} me-1"></i>
+            {{ trend.value }}
+        </small>
+    </div>
+    {% endif %}
+</div>

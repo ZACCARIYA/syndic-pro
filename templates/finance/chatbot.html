@@ -1,0 +1,569 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Assistant Virtuel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chatbot-container {
+        max-width: 800px;
+        margin: 0 auto;
+        height: calc(100vh - 150px);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chatbot-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 20px 20px 0 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .chatbot-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: float-bg 6s ease-in-out infinite;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .message {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        animation: slideInMessage 0.5s ease;
+    }
+    
+    .message.user {
+        flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .message.user .message-avatar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .message.bot .message-avatar {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .message-content {
+        max-width: 70%;
+        padding: 1rem 1.25rem;
+        border-radius: 18px;
+        position: relative;
+        word-wrap: break-word;
+    }
+    
+    .message.user .message-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 6px;
+    }
+    
+    .message.bot .message-content {
+        background: white;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        border-bottom-left-radius: 6px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .message-time {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+    }
+    
+    .message.user .message-time {
+        text-align: right;
+        color: rgba(255,255,255,0.7);
+    }
+    
+    .chat-input {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 0 0 20px 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .input-group {
+        position: relative;
+    }
+    
+    .chat-input-field {
+        border: 2px solid #e2e8f0;
+        border-radius: 25px;
+        padding: 0.75rem 4rem 0.75rem 1.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        resize: none;
+        min-height: 50px;
+        max-height: 120px;
+    }
+    
+    .chat-input-field:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+    
+    .send-button {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .send-button:hover {
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .send-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .quick-suggestions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    
+    .suggestion-chip {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #475569;
+    }
+    
+    .suggestion-chip:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: scale(1.05);
+    }
+    
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        color: #94a3b8;
+        font-style: italic;
+    }
+    
+    .typing-dots {
+        display: flex;
+        gap: 4px;
+    }
+    
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #94a3b8;
+        animation: typing 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes typing {
+        0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+        40% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes slideInMessage {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .helpful-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+    
+    .helpful-btn {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        border: 1px solid #cbd5e1;
+        background: white;
+        color: #64748b;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .helpful-btn:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+    }
+    
+    .helpful-btn.positive:hover {
+        background: #dcfce7;
+        border-color: #22c55e;
+        color: #22c55e;
+    }
+    
+    .helpful-btn.negative:hover {
+        background: #fef2f2;
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+    
+    .welcome-message {
+        text-align: center;
+        padding: 2rem;
+        color: #64748b;
+    }
+    
+    .bot-avatar-icon {
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="chatbot-container">
+        <!-- Header du Chatbot -->
+        <div class="chatbot-header">
+            <h3 class="mb-2">
+                <i class="fas fa-robot bot-avatar-icon me-2"></i>
+                Assistant Virtuel SyndicPro
+            </h3>
+            <p class="mb-0 opacity-75">
+                Posez vos questions, je suis là pour vous aider !
+            </p>
+        </div>
+
+        <!-- Zone des Messages -->
+        <div class="chat-messages" id="chatMessages">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="message {% if message.message_type == 'USER' %}user{% else %}bot{% endif %}">
+                <div class="message-avatar">
+                    {% if message.message_type == 'USER' %}
+                    {{ user.get_full_name.0|default:user.username.0|upper }}
+                    {% else %}
+                    <i class="fas fa-robot"></i>
+                    {% endif %}
+                </div>
+                <div class="message-content">
+                    {{ message.content|linebreaks }}
+                    <div class="message-time">{{ message.created_at|date:"H:i" }}</div>
+                    
+                    {% if message.message_type == 'FAQ' %}
+                    <div class="helpful-buttons">
+                        <button class="helpful-btn positive" onclick="markHelpful({{ message.id }}, true)">
+                            <i class="fas fa-thumbs-up me-1"></i>Utile
+                        </button>
+                        <button class="helpful-btn negative" onclick="markHelpful({{ message.id }}, false)">
+                            <i class="fas fa-thumbs-down me-1"></i>Pas utile
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <!-- Message de bienvenue -->
+            <div class="welcome-message">
+                <i class="fas fa-robot fa-4x text-primary mb-3"></i>
+                <h5 class="text-primary">Bonjour {{ user.get_full_name|default:user.username }} !</h5>
+                <p class="mb-4">Je suis votre assistant virtuel. Je peux vous aider avec :</p>
+                
+                <div class="quick-suggestions">
+                    <div class="suggestion-chip" onclick="sendQuickMessage('Comment payer ma facture ?')">
+                        💳 Paiements
+                    </div>
+                    <div class="suggestion-chip" onclick="sendQuickMessage('Quand sont les charges ?')">
+                        🏠 Charges
+                    </div>
+                    <div class="suggestion-chip" onclick="sendQuickMessage('Comment contacter le syndic ?')">
+                        📞 Contact
+                    </div>
+                    <div class="suggestion-chip" onclick="sendQuickMessage('Règlement de copropriété')">
+                        📋 Règlement
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Indicateur de frappe -->
+            <div class="typing-indicator d-none" id="typingIndicator">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Zone de Saisie -->
+        <div class="chat-input">
+            <!-- Suggestions rapides -->
+            {% if popular_faqs %}
+            <div class="quick-suggestions mb-3">
+                <small class="text-muted me-2">Questions populaires :</small>
+                {% for faq in popular_faqs|slice:":4" %}
+                <div class="suggestion-chip" onclick="sendQuickMessage('{{ faq.question|escapejs }}')">
+                    {{ faq.question|truncatechars:30 }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form id="chatForm" class="input-group">
+                <textarea 
+                    id="messageInput" 
+                    class="chat-input-field" 
+                    placeholder="Tapez votre question ici..."
+                    rows="1"
+                    required></textarea>
+                <button type="submit" class="send-button" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatForm = document.getElementById('chatForm');
+        const typingIndicator = document.getElementById('typingIndicator');
+        
+        const sessionId = '{{ conversation.session_id }}';
+        
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        // Envoyer message
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (message) {
+                sendMessage(message);
+            }
+        });
+        
+        // Raccourci clavier (Ctrl+Enter)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        function sendMessage(message) {
+            // Désactiver l'input pendant l'envoi
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+            
+            // Ajouter le message utilisateur à l'interface
+            addMessageToChat('user', message, 'Vous');
+            
+            // Vider l'input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // Afficher l'indicateur de frappe
+            showTypingIndicator();
+            
+            // Envoyer la requête
+            fetch('{% url "finance:chatbot_message_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: sessionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideTypingIndicator();
+                
+                if (data.success) {
+                    const response = data.response;
+                    addMessageToChat('bot', response.content, 'Assistant', response);
+                } else {
+                    addMessageToChat('bot', 'Désolé, une erreur s\'est produite. Veuillez réessayer.', 'Assistant');
+                }
+            })
+            .catch(error => {
+                hideTypingIndicator();
+                addMessageToChat('bot', 'Erreur de connexion. Veuillez vérifier votre connexion internet.', 'Assistant');
+                console.error('Erreur:', error);
+            })
+            .finally(() => {
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            });
+        }
+        
+        function addMessageToChat(type, content, sender, responseData = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            
+            let helpfulButtons = '';
+            if (responseData && responseData.helpful_buttons) {
+                helpfulButtons = `
+                    <div class="helpful-buttons">
+                        <button class="helpful-btn positive" onclick="markHelpful(null, true)">
+                            <i class="fas fa-thumbs-up me-1"></i>Utile
+                        </button>
+                        <button class="helpful-btn negative" onclick="markHelpful(null, false)">
+                            <i class="fas fa-thumbs-down me-1"></i>Pas utile
+                        </button>
+                    </div>
+                `;
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    ${type === 'user' ? 
+                        '{{ user.get_full_name.0|default:user.username.0|upper }}' : 
+                        '<i class="fas fa-robot"></i>'
+                    }
+                </div>
+                <div class="message-content">
+                    ${content.replace(/\n/g, '<br>')}
+                    <div class="message-time">${timeStr}</div>
+                    ${helpfulButtons}
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        function showTypingIndicator() {
+            typingIndicator.classList.remove('d-none');
+            scrollToBottom();
+        }
+        
+        function hideTypingIndicator() {
+            typingIndicator.classList.add('d-none');
+        }
+        
+        function scrollToBottom() {
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
+        }
+        
+        // Fonction globale pour les suggestions rapides
+        window.sendQuickMessage = function(message) {
+            messageInput.value = message;
+            chatForm.dispatchEvent(new Event('submit'));
+        };
+        
+        // Fonction globale pour marquer comme utile
+        window.markHelpful = function(messageId, isHelpful) {
+            // Ici on pourrait envoyer un feedback au serveur
+            const button = event.target.closest('.helpful-btn');
+            button.style.background = isHelpful ? '#dcfce7' : '#fef2f2';
+            button.style.color = isHelpful ? '#22c55e' : '#ef4444';
+            button.disabled = true;
+            
+            // Masquer les autres boutons du même groupe
+            const buttons = button.parentElement.querySelectorAll('.helpful-btn');
+            buttons.forEach(btn => {
+                if (btn !== button) {
+                    btn.style.display = 'none';
+                }
+            });
+        };
+        
+        // Focus initial sur l'input
+        messageInput.focus();
+        
+        // Scroll initial vers le bas
+        scrollToBottom();
+    });
+</script>
+
+<!-- Token CSRF pour les requêtes AJAX -->
+{% csrf_token %}
+{% endblock %}

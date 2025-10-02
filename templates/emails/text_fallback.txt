@@ -1,0 +1,36 @@
+{{ app_name }} - Gestion de copropriété professionnelle
+
+{% if subject %}{{ subject }}
+{% endif %}
+
+Bonjour {{ resident_name|default:"" }},
+
+{{ intro_text|default:"Vous avez reçu une nouvelle notification importante concernant votre copropriété." }}
+
+DÉTAILS DE LA NOTIFICATION:
+============================
+
+{% if document_type %}📄 Type: {{ document_type }}{% endif %}
+{% if notification_type %}🏷️ Type: {{ notification_type }}{% endif %}
+{% if priority %}⚡ Priorité: {{ priority }}{% endif %}
+{% if amount %}💰 Montant: {{ amount }} DH{% endif %}
+{% if date %}📅 Date: {{ date }}{% endif %}
+{% if message %}📝 Message: {{ message }}{% endif %}
+{% if link %}🔗 Lien: {{ link }}{% endif %}
+
+{% if link %}
+ACCÈS RAPIDE:
+=============
+Cliquez sur le lien suivant pour accéder au document:
+{{ link }}
+{% endif %}
+
+Merci de votre confiance,
+L'équipe {{ app_name }}
+
+--
+{{ syndic_name }}
+📧 Contact: {{ syndic_contact_email }}
+
+Cet email a été envoyé automatiquement par {{ app_name }}.
+Merci de ne pas répondre directement à cet email.

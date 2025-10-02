@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Connexion - SyndicPro{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="login-card">
+                    <div class="login-header">
+                        <div class="login-logo">
+                            <img src="{% static 'images/logos/logo.svg' %}" alt="SyndicPro" class="logo-main">
+                        </div>
+                        <h2>Connexion</h2>
+                        <p>Accédez à votre espace</p>
+                    </div>
+                    
+                    <form method="post" class="login-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="username">Nom d'utilisateur</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username" 
+                                   name="username" 
+                                   required 
+                                   placeholder="Votre nom d'utilisateur">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Mot de passe</label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password" 
+                                   required 
+                                   placeholder="Votre mot de passe">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            Se connecter
+                        </button>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== STYLES MODERNES POUR PAGE DE CONNEXION ===== */
+
+.login-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    padding: 3rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1;
+    animation: slideInUp 0.8s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.login-header h2 {
+    color: #2d3748;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.login-header p {
+    color: #718096;
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+.login-form .form-group {
+    margin-bottom: 1.8rem;
+    position: relative;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 0.8rem;
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.login-form .form-control {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f7fafc;
+    font-weight: 500;
+    color: #2d3748;
+    position: relative;
+}
+
+.login-form .form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    background: white;
+    transform: translateY(-2px);
+}
+
+.login-form .form-control::placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+}
+
+.login-form .btn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-form .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.login-form .btn:hover::before {
+    left: 100%;
+}
+
+.login-form .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+}
+
+.login-form .btn:active {
+    transform: translateY(-1px);
+}
+
+/* Effet de particules flottantes */
+.login-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255,255,255,0.05) 0%, transparent 50%);
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+/* Animation des champs au focus */
+.login-form .form-group {
+    transition: transform 0.3s ease;
+}
+
+.login-form .form-group:focus-within {
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .login-container {
+        padding: 1rem 0;
+    }
+    
+    .login-card {
+        padding: 2rem;
+        margin: 1rem;
+    }
+    
+    .login-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .login-form .form-control {
+        padding: 0.9rem 1rem;
+    }
+    
+    .login-form .btn {
+        padding: 0.9rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .login-card {
+        padding: 1.5rem;
+        margin: 0.5rem;
+    }
+    
+    .login-header h2 {
+        font-size: 1.6rem;
+    }
+    
+    .login-form .form-control {
+        padding: 0.8rem;
+    }
+    
+    .login-form .btn {
+        padding: 0.8rem 1.2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation d'entrée de la carte
+    const loginCard = document.querySelector('.login-card');
+    if (loginCard) {
+        loginCard.style.opacity = '0';
+        loginCard.style.transform = 'translateY(50px)';
+        
+        setTimeout(() => {
+            loginCard.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            loginCard.style.opacity = '1';
+            loginCard.style.transform = 'translateY(0)';
+        }, 100);
+    }
+    
+    // Animation des champs au focus
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'translateY(-2px)';
+            this.parentElement.style.transition = 'transform 0.3s ease';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'translateY(0)';
+        });
+        
+        // Animation de validation en temps réel
+        input.addEventListener('input', function() {
+            if (this.value.length > 0) {
+                this.style.borderColor = '#48bb78';
+                this.style.boxShadow = '0 0 0 4px rgba(72, 187, 120, 0.1)';
+            } else {
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+            }
+        });
+    });
+    
+    // Animation du bouton au survol
+    const loginBtn = document.querySelector('.btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px) scale(1.02)';
+        });
+        
+        loginBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+        
+        // Animation de clic
+        loginBtn.addEventListener('mousedown', function() {
+            this.style.transform = 'translateY(-1px) scale(0.98)';
+        });
+        
+        loginBtn.addEventListener('mouseup', function() {
+            this.style.transform = 'translateY(-3px) scale(1.02)';
+        });
+    }
+    
+    // Effet de particules au clic
+    document.addEventListener('click', function(e) {
+        const particle = document.createElement('div');
+        particle.style.position = 'fixed';
+        particle.style.left = e.clientX + 'px';
+        particle.style.top = e.clientY + 'px';
+        particle.style.width = '4px';
+        particle.style.height = '4px';
+        particle.style.background = 'rgba(102, 126, 234, 0.8)';
+        particle.style.borderRadius = '50%';
+        particle.style.pointerEvents = 'none';
+        particle.style.zIndex = '9999';
+        particle.style.animation = 'particle 0.6s ease-out forwards';
+        
+        document.body.appendChild(particle);
+        
+        setTimeout(() => {
+            document.body.removeChild(particle);
+        }, 600);
+    });
+    
+    // Animation de validation du formulaire
+    const form = document.querySelector('.login-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const btn = this.querySelector('.btn');
+            const originalText = btn.innerHTML;
+            
+            // Animation de chargement
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Connexion...';
+            btn.disabled = true;
+            btn.style.transform = 'scale(0.95)';
+            
+            // Simuler un délai de connexion
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.transform = 'scale(1)';
+            }, 2000);
+        });
+    }
+});
+
+// CSS pour l'animation des particules
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes particle {
+        0% {
+            transform: scale(0) translateY(0);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(1) translateY(-100px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
+

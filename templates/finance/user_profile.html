@@ -1,0 +1,444 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Profil - {{ user.get_full_name|default:user.username }}{% endblock %}
+
+{% block content %}
+<!-- ===== EN-TÊTE DE PAGE ===== -->
+{% include 'components/page_header.html' with title="Mon Profil" subtitle="Gérer vos informations personnelles" icon="fas fa-user" actions=page_actions|default:None %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- ===== INFORMATIONS PERSONNELLES ===== -->
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Informations Personnelles
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-user me-2"></i>Nom d'utilisateur
+                                </label>
+                                <div class="info-value">{{ user_info.username }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-envelope me-2"></i>Email
+                                </label>
+                                <div class="info-value">
+                                    {% if user_info.email %}
+                                        <a href="mailto:{{ user_info.email }}" class="email-link">
+                                            {{ user_info.email }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Non renseigné</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-user me-2"></i>Prénom
+                                </label>
+                                <div class="info-value">
+                                    {{ user_info.first_name|default:"Non renseigné" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-user me-2"></i>Nom de famille
+                                </label>
+                                <div class="info-value">
+                                    {{ user_info.last_name|default:"Non renseigné" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if user_info.phone %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-phone me-2"></i>Téléphone
+                                </label>
+                                <div class="info-value">
+                                    <a href="tel:{{ user_info.phone }}" class="phone-link">
+                                        {{ user_info.phone }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% if user_info.apartment %}
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-home me-2"></i>Appartement
+                                </label>
+                                <div class="info-value">
+                                    <span class="badge bg-info apartment-badge">
+                                        <i class="fas fa-building me-1"></i>{{ user_info.apartment }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if user_info.address %}
+                    <div class="info-item">
+                        <label class="info-label">
+                            <i class="fas fa-map-marker-alt me-2"></i>Adresse
+                        </label>
+                        <div class="info-value">{{ user_info.address }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- ===== INFORMATIONS DU COMPTE ===== -->
+            <div class="card-modern mt-4">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>Informations du Compte
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-user-tag me-2"></i>Rôle
+                                </label>
+                                <div class="info-value">
+                                    <span class="badge role-badge bg-{% if user_info.role == 'SUPERADMIN' %}danger{% elif user_info.role == 'SYNDIC' %}primary{% else %}success{% endif %}">
+                                        {% if user_info.role == 'SUPERADMIN' %}
+                                            <i class="fas fa-crown me-1"></i>Super Administrateur
+                                        {% elif user_info.role == 'SYNDIC' %}
+                                            <i class="fas fa-user-tie me-1"></i>Syndic
+                                        {% else %}
+                                            <i class="fas fa-user me-1"></i>Résident
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-toggle-on me-2"></i>Statut
+                                </label>
+                                <div class="info-value">
+                                    <span class="badge status-badge bg-{% if user_info.is_active %}success{% else %}danger{% endif %}">
+                                        <i class="fas fa-{% if user_info.is_active %}check-circle{% else %}times-circle{% endif %} me-1"></i>
+                                        {% if user_info.is_active %}Actif{% else %}Inactif{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-calendar-plus me-2"></i>Date d'inscription
+                                </label>
+                                <div class="info-value">
+                                    {{ user_info.date_joined|date:"d/m/Y à H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Dernière connexion
+                                </label>
+                                <div class="info-value">
+                                    {% if user_info.last_login %}
+                                        {{ user_info.last_login|date:"d/m/Y à H:i" }}
+                                    {% else %}
+                                        <span class="text-muted">Jamais</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- ===== AVATAR ET RÉSUMÉ ===== -->
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-id-card me-2"></i>Profil
+                    </h5>
+                </div>
+                <div class="card-body-modern text-center">
+                    <div class="profile-avatar mb-3">
+                        <div class="avatar-large bg-primary text-white">
+                            {{ user_info.first_name|first|default:user_info.username|first|upper }}{{ user_info.last_name|first|default:""|upper }}
+                        </div>
+                    </div>
+                    
+                    <h4 class="profile-name mb-2">
+                        {{ user_info.first_name|default:"" }} {{ user_info.last_name|default:"" }}
+                        {% if not user_info.first_name and not user_info.last_name %}
+                            {{ user_info.username }}
+                        {% endif %}
+                    </h4>
+                    
+                    <p class="profile-role text-muted mb-3">
+                        {% if user_info.role == 'SUPERADMIN' %}
+                            Super Administrateur
+                        {% elif user_info.role == 'SYNDIC' %}
+                            Syndic
+                        {% else %}
+                            Résident
+                        {% endif %}
+                    </p>
+                    
+                    <div class="profile-status mb-3">
+                        <span class="badge status-badge bg-{% if user_info.is_active %}success{% else %}danger{% endif %}">
+                            <i class="fas fa-{% if user_info.is_active %}check-circle{% else %}times-circle{% endif %} me-1"></i>
+                            {% if user_info.is_active %}Compte actif{% else %}Compte inactif{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ===== STATISTIQUES ===== -->
+            {% if stats %}
+            <div class="card-modern mt-4">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Statistiques
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+                    {% if user_info.role in 'SYNDIC SUPERADMIN' %}
+                        <div class="stat-item">
+                            <div class="stat-icon bg-primary">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ stats.total_residents }}</div>
+                                <div class="stat-label">Résidents</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon bg-info">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ stats.total_documents }}</div>
+                                <div class="stat-label">Documents</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon bg-success">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ stats.total_expenses }}</div>
+                                <div class="stat-label">Dépenses</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="stat-item">
+                            <div class="stat-icon bg-primary">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ stats.my_documents }}</div>
+                                <div class="stat-label">Mes Documents</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon bg-success">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ stats.my_payments }}</div>
+                                <div class="stat-label">Mes Paiements</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon bg-warning">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">{{ stats.unread_notifications }}</div>
+                            <div class="stat-label">Notifications non lues</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== STYLES MODERNES POUR PROFIL UTILISATEUR ===== */
+
+.info-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color, #e9ecef);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.info-label {
+    display: block;
+    color: var(--primary-600, #0a58ca);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.info-value {
+    color: var(--text-dark, #212529);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.email-link, .phone-link {
+    color: var(--primary-600, #0a58ca);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.email-link:hover, .phone-link:hover {
+    color: var(--primary-800, #052c65);
+    text-decoration: underline;
+}
+
+.apartment-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.role-badge, .status-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.profile-avatar {
+    position: relative;
+}
+
+.avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.profile-name {
+    color: var(--text-dark, #212529);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.profile-role {
+    color: var(--text-muted, #6c757d);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color, #e9ecef);
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark, #212529);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted, #6c757d);
+    margin-top: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .avatar-large {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .stat-item {
+        padding: 0.75rem 0;
+    }
+    
+    .stat-value {
+        font-size: 1.25rem;
+    }
+}
+</style>
+{% endblock %}

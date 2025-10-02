@@ -1,0 +1,53 @@
+{% extends 'emails/base.html' %}
+{% block content %}
+  <p class="greeting">Bonjour {{ resident_name }},</p>
+
+  <p class="intro-text">Un nouveau document a été ajouté à votre espace personnel. Vous trouverez ci-dessous tous les détails concernant ce document.</p>
+
+  <div class="info-section">
+    <div class="info-item">
+      <span class="info-icon">📄</span>
+      <span class="info-label">Type :</span>
+      <span class="info-value">{{ document_type }}</span>
+    </div>
+    
+    <div class="info-item">
+      <span class="info-icon">💰</span>
+      <span class="info-label">Montant :</span>
+      <span class="info-value">{{ amount }} DH</span>
+    </div>
+    
+    <div class="info-item">
+      <span class="info-icon">📅</span>
+      <span class="info-label">Date :</span>
+      <span class="info-value">{{ date }}</span>
+    </div>
+    
+    {% if message %}
+    <div class="info-item">
+      <span class="info-icon">📝</span>
+      <span class="info-label">Message :</span>
+      <span class="info-value">{{ message }}</span>
+    </div>
+    {% endif %}
+    
+    {% if link %}
+    <div class="info-item">
+      <span class="info-icon">🔗</span>
+      <span class="info-label">Lien :</span>
+      <span class="info-value"><a href="{{ link }}" target="_blank" rel="noopener" style="color: #3b82f6; text-decoration: none;">{{ link }}</a></span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if link %}
+  <div class="cta-section">
+    <a href="{{ link }}" target="_blank" rel="noopener" class="cta-button">Accéder au document</a>
+  </div>
+  {% endif %}
+
+  <p style="margin-top: 40px; font-size: 16px; color: #333333; line-height: 1.7;">
+    Merci de votre confiance,<br>
+    <strong>L'équipe {{ app_name }}</strong>
+  </p>
+{% endblock %}

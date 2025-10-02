@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Signalements de Problèmes{% endblock %}
+
+{% block content %}
+<!-- ===== EN-TÊTE DE PAGE ===== -->
+<div class="page-header">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="page-header-content">
+            <div class="page-header-icon"><i class="fas fa-exclamation-triangle text-warning"></i></div>
+            <div class="page-header-text">
+                <h1>Signalements de Problèmes</h1>
+                <p>Gestion des problèmes signalés par les résidents</p>
+            </div>
+        </div>
+        <div class="page-header-actions">
+            <a href="{% url 'finance:report_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-smile me-2"></i>Rapports Positifs
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- ===== STATISTIQUES ===== -->
+    {% if user.role in 'SYNDIC,SUPERADMIN' %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-value text-warning">{{ total_issue_reports|default:0 }}</div>
+                    <div class="stats-label">Total Signalements</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-danger">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-value text-danger">{{ new_issue_reports|default:0 }}</div>
+                    <div class="stats-label">Nouveaux</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-info">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-value text-info">{{ urgent_issues|default:0 }}</div>
+                    <div class="stats-label">Urgents (7j)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-value text-success">{{ total_issue_reports|add:"-"|add:new_issue_reports|default:0 }}</div>
+                    <div class="stats-label">Traités</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== LISTE DES RAPPORTS ===== -->
+    {% if reports %}
+    <div class="row">
+        {% for report in reports %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card modern-card issue-card" onclick="window.location.href='{% url 'finance:report_detail' report.pk %}'">
+                <div class="card-header-modern">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            {% if report.photo %}
+                            <img src="{{ report.photo.url }}" alt="photo" class="report-photo me-3">
+                            {% else %}
+                            <div class="report-icon me-3">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h6 class="mb-0">{{ report.title }}</h6>
+                                <small class="text-muted">
+                                    {{ report.created_at|date:'d/m/Y H:i' }} • {{ report.resident.get_full_name|default:report.resident.username }}
+                                </small>
+                            </div>
+                        </div>
+                        <span class="badge bg-{% if report.status == 'NEW' %}danger{% elif report.status == 'REVIEWED' %}warning{% else %}secondary{% endif %}">
+                            {{ report.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body-modern">
+                    <p class="text-muted mb-3">{{ report.message|truncatechars:120 }}</p>
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <span class="badge bg-info">
+                            <i class="fas fa-tag me-1"></i>{{ report.get_category_display }}
+                        </span>
+                        {% if report.location %}
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ report.location }}
+                        </span>
+                        {% endif %}
+                        <span class="badge bg-warning">
+                            <i class="fas fa-flag me-1"></i>Signalement
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-check-circle text-success"></i>
+            </div>
+            <h3 class="mb-2">Aucun signalement</h3>
+            <p class="text-muted mb-4">Aucun problème signalé pour le moment.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.issue-card {
+    border-left: 4px solid var(--warning-color, #ffc107);
+    transition: all 0.3s ease;
+}
+
+.issue-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.report-photo {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.report-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--warning-50, #fff3cd);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--warning-600, #856404);
+}
+
+.stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color, #e9ecef);
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.stats-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.stats-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stats-label {
+    font-size: 0.875rem;
+    color: var(--text-muted, #6c757d);
+    font-weight: 500;
+}
+</style>
+{% endblock %}

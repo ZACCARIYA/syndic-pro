@@ -1,0 +1,37 @@
+<!-- ===== COMPOSANT CARTE MODERNE ===== -->
+
+<div class="card-modern {% if class %}{{ class }}{% endif %}">
+    {% if header_gradient %}
+    <div class="card-header-modern">
+        {% if icon %}<i class="{{ icon }} me-2"></i>{% endif %}
+        <h5 class="mb-0">{{ title }}</h5>
+        {% if badge %}<span class="badge-modern badge-light ms-auto">{{ badge }}</span>{% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="card-body-modern">
+        {% if title and not header_gradient %}
+        <h5 class="card-title mb-4">
+            {% if icon %}<i class="{{ icon }} me-2 text-primary"></i>{% endif %}
+            {{ title }}
+        </h5>
+        {% endif %}
+        
+        {% if content %}
+        <div class="card-content">
+            {{ content|safe }}
+        </div>
+        {% endif %}
+        
+        {% if actions %}
+        <div class="card-actions mt-4 d-flex gap-2">
+            {% for action in actions %}
+            <a href="{{ action.url }}" class="btn-modern btn-{{ action.type|default:'primary' }}">
+                {% if action.icon %}<i class="{{ action.icon }}"></i>{% endif %}
+                {{ action.label }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>

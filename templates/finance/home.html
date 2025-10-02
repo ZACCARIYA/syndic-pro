@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+<!-- ===== HERO SECTION ===== -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-md-6">
+                <h1 class="hero-title text-primary mb-4">
+                    Bienvenue sur <strong>SyndicPro</strong>
+                </h1>
+                <p class="hero-subtitle text-muted mb-5">
+                    La solution moderne et complète pour la gestion de votre copropriété.
+                    Simplifiez vos tâches quotidiennes avec notre interface intuitive.
+                </p>
+                
+                {% if user.is_authenticated %}
+                    {% if user.role == 'RESIDENT' %}
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{% url 'finance:resident_dashboard' %}" class="btn-modern btn-primary">
+                            <i class="fas fa-home"></i>
+                            Mon Espace
+                        </a>
+                        <a href="{% url 'finance:document_list' %}" class="btn-modern btn-outline">
+                            <i class="fas fa-file-alt"></i>
+                            Mes Documents
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{% url 'finance:syndic_dashboard' %}" class="btn-modern btn-primary">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Tableau de Bord
+                        </a>
+                        <a href="{% url 'finance:resident_management' %}" class="btn-modern btn-outline">
+                            <i class="fas fa-users"></i>
+                            Gérer Résidents
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{% url 'finance:login' %}" class="btn-modern btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Se Connecter
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-6 text-center">
+                <div class="hero-illustration">
+                    <i class="fas fa-building fa-10x text-primary opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FONCTIONNALITÉS ===== -->
+{% if not user.is_authenticated %}
+<section class="features-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="text-primary">Fonctionnalités Principales</h2>
+            <p class="text-muted">Tout ce dont vous avez besoin pour gérer votre copropriété</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                {% include 'components/card.html' with title="Gestion des Résidents" content="Gérez facilement tous vos résidents, leurs informations et leurs paiements." icon="fas fa-users" %}
+            </div>
+            <div class="col-md-4 mb-4">
+                {% include 'components/card.html' with title="Documents et Factures" content="Créez et gérez tous vos documents administratifs en toute simplicité." icon="fas fa-file-alt" %}
+            </div>
+            <div class="col-md-4 mb-4">
+                {% include 'components/card.html' with title="Suivi des Paiements" content="Suivez les paiements en temps réel avec des alertes automatiques." icon="fas fa-credit-card" %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== STATISTIQUES (UTILISATEURS CONNECTÉS) ===== -->
+{% if user.is_authenticated %}
+<section class="stats-section py-5">
+    <div class="container">
+        <h3 class="text-center text-primary mb-5">Aperçu Rapide</h3>
+
+        <div class="row">
+            {% if user.role == 'RESIDENT' %}
+                <!-- Statistiques résident -->
+                <div class="col-md-4 mb-4">
+                    {% include 'components/stats_card.html' with value=user.documents.count label="Mes Documents" icon="fas fa-file-alt" color="primary" %}
+                </div>
+                <div class="col-md-4 mb-4">
+                    {% include 'components/stats_card.html' with value=user.received_notifications.count label="Notifications" icon="fas fa-bell" color="warning" %}
+                </div>
+                <div class="col-md-4 mb-4">
+                    {% include 'components/stats_card.html' with value=user.resident_reports.count label="Mes Rapports" icon="fas fa-smile" color="success" %}
+                </div>
+            {% else %}
+                <!-- Statistiques syndic -->
+                <div class="col-md-3 mb-4">
+                    {% include 'components/stats_card.html' with value=total_residents|default:0 label="Résidents" icon="fas fa-users" color="primary" %}
+                </div>
+                <div class="col-md-3 mb-4">
+                    {% include 'components/stats_card.html' with value=total_documents|default:0 label="Documents" icon="fas fa-file-alt" color="info" %}
+                </div>
+                <div class="col-md-3 mb-4">
+                    {% include 'components/stats_card.html' with value=total_notifications|default:0 label="Notifications" icon="fas fa-bell" color="warning" %}
+                </div>
+                <div class="col-md-3 mb-4">
+                    {% include 'components/stats_card.html' with value=total_reports|default:0 label="Rapports" icon="fas fa-smile" color="success" %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== STYLES SPÉCIFIQUES À LA PAGE D'ACCUEIL ===== */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-bg) 0%, var(--white) 100%);
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.hero-subtitle {
+    font-size: var(--font-size-lg);
+    line-height: 1.6;
+}
+
+.hero-illustration {
+    animation: float 6s ease-in-out infinite;
+}
+
+.features-section {
+    background: var(--white);
+}
+
+.stats-section {
+    background: var(--gray-50);
+}
+
+.min-vh-50 {
+    min-height: 50vh;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-section {
+        min-height: 60vh;
+        text-align: center;
+    }
+    
+    .hero-illustration {
+        margin-top: var(--spacing-8);
+    }
+}
+</style>
+{% endblock %}

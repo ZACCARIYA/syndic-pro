@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ajouter un Commentaire - SyndicPro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- ===== EN-TÊTE DE PAGE ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">Ajouter un Commentaire</h2>
+                    <p class="text-muted mb-0">Partagez des informations ou des mises à jour sur ce rapport</p>
+                </div>
+                <div>
+                    <a href="{% url 'finance:report_detail' report.pk %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour au rapport
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comment me-2"></i>Nouveau Commentaire
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- ===== COMMENTAIRE ===== -->
+                        <div class="mb-4">
+                            <label for="{{ form.comment.id_for_label }}" class="form-label">
+                                <i class="fas fa-comment me-2"></i>Commentaire
+                            </label>
+                            <textarea class="form-control" 
+                                      id="{{ form.comment.id_for_label }}" 
+                                      name="{{ form.comment.name }}" 
+                                      rows="5" 
+                                      placeholder="Ajoutez votre commentaire ici..." 
+                                      required></textarea>
+                            <div class="form-text">
+                                Partagez des informations utiles ou des mises à jour sur ce rapport.
+                            </div>
+                        </div>
+                        
+                        <!-- ===== COMMENTAIRE INTERNE ===== -->
+                        {% if user.role in 'SYNDIC,SUPERADMIN' %}
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="{{ form.is_internal.id_for_label }}" 
+                                       name="{{ form.is_internal.name }}"
+                                       {% if form.is_internal.value %}checked{% endif %}>
+                                <label class="form-check-label" for="{{ form.is_internal.id_for_label }}">
+                                    <i class="fas fa-lock me-2"></i>Commentaire interne
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                Les commentaires internes ne sont visibles que par les syndics et administrateurs.
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- ===== CONSEILS ===== -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-lightbulb me-2"></i>Conseils pour un bon commentaire
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Soyez clair et précis dans vos informations</li>
+                                <li>Mentionnez les actions prises ou prévues</li>
+                                <li>Indiquez les délais si applicable</li>
+                                <li>Utilisez un ton professionnel et respectueux</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- ===== BOUTONS ===== -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'finance:report_detail' report.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Publier le Commentaire
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validation du formulaire
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Compteur de caractères
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('{{ form.comment.id_for_label }}');
+    const maxLength = 1000;
+    
+    // Créer le compteur
+    const counter = document.createElement('div');
+    counter.className = 'form-text text-end';
+    counter.innerHTML = '<span id="charCount">0</span> / ' + maxLength + ' caractères';
+    textarea.parentNode.appendChild(counter);
+    
+    // Mettre à jour le compteur
+    function updateCounter() {
+        const length = textarea.value.length;
+        const charCount = document.getElementById('charCount');
+        charCount.textContent = length;
+        
+        if (length > maxLength * 0.9) {
+            charCount.className = 'text-warning';
+        } else if (length > maxLength) {
+            charCount.className = 'text-danger';
+        } else {
+            charCount.className = '';
+        }
+    }
+    
+    textarea.addEventListener('input', updateCounter);
+    updateCounter();
+});
+</script>
+{% endblock %}

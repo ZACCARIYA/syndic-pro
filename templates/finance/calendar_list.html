@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendrier{% endblock %}
+
+{% block content %}
+<!-- ===== EN-TÊTE DE PAGE ===== -->
+{% include 'components/page_header.html' with title="Calendrier" subtitle="Réunions et dates importantes" icon="fas fa-calendar-days" actions=page_actions %}
+
+<div class="container">
+    {% if events %}
+        <!-- ===== LISTE DES ÉVÉNEMENTS ===== -->
+        <div class="row">
+            {% for event in events %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card-modern event-card">
+                    <div class="card-header-modern">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="fas fa-calendar me-2"></i>{{ event.title }}
+                            </h6>
+                            <span class="badge-modern badge-{{ event.event_type|lower }}">
+                                {{ event.get_event_type_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body-modern">
+                        <!-- Date et heure -->
+                        <div class="event-datetime mb-3">
+                            <div class="d-flex align-items-center text-primary">
+                                <i class="fas fa-clock me-2"></i>
+                                <div>
+                                    <div class="fw-semibold">{{ event.start_at|date:"d/m/Y" }}</div>
+                                    <small class="text-muted">
+                                        {{ event.start_at|date:"H:i" }}
+                                        {% if event.end_at %}
+                                        → {{ event.end_at|date:"H:i" }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Description -->
+                        {% if event.description %}
+                        <div class="event-description mb-3">
+                            <p class="text-muted small mb-0">{{ event.description|truncatewords:20 }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Audience -->
+                        <div class="event-audience mb-3">
+                            {% if event.audience == 'ALL_RESIDENTS' %}
+                            <span class="badge-modern badge-success">
+                                <i class="fas fa-users me-1"></i>Tous les résidents
+                            </span>
+                            {% else %}
+                            <span class="badge-modern badge-info">
+                                <i class="fas fa-user-check me-1"></i>{{ event.participants.count }} participant(s)
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Rappel -->
+                        {% if event.reminder_minutes_before %}
+                        <div class="event-reminder">
+                            <small class="text-muted">
+                                <i class="fas fa-bell me-1"></i>
+                                Rappel {{ event.reminder_minutes_before }} min avant
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- ===== STATISTIQUES ===== -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h4 class="text-primary mb-4">
+                    <i class="fas fa-chart-bar me-2"></i>Statistiques
+                </h4>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        {% include 'components/stats_card.html' with value=events|length label="Total Événements" icon="fas fa-calendar" color="primary" %}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        {% include 'components/stats_card.html' with value=events|length label="Réunions" icon="fas fa-users" color="success" %}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        {% include 'components/stats_card.html' with value=events|length label="Échéances" icon="fas fa-clock" color="warning" %}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        {% include 'components/stats_card.html' with value=events|length label="Autres" icon="fas fa-tag" color="info" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    {% else %}
+        <!-- ===== ÉTAT VIDE ===== -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card-modern">
+                    <div class="card-body-modern text-center py-5">
+                        <i class="fas fa-calendar fa-4x text-muted mb-4"></i>
+                        <h4 class="text-muted mb-3">Aucun événement programmé</h4>
+                        <p class="text-muted mb-4">
+                            {% if user.role in 'SYNDIC SUPERADMIN' %}
+                            Commencez par créer votre premier événement pour organiser les réunions et échéances.
+                            {% else %}
+                            Aucun événement n'a encore été programmé par votre syndic.
+                            {% endif %}
+                        </p>
+                        {% if user.role in 'SYNDIC SUPERADMIN' %}
+                        <a href="{% url 'finance:event_create' %}" class="btn-modern btn-primary">
+                            <i class="fas fa-plus"></i>Créer un Événement
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== STYLES SPÉCIFIQUES AU CALENDRIER ===== */
+.event-card {
+    transition: var(--transition);
+    height: 100%;
+}
+
+.event-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.event-datetime {
+    background: var(--primary-bg);
+    padding: var(--spacing-3);
+    border-radius: var(--radius);
+    border-left: 4px solid var(--primary);
+}
+
+.event-description {
+    border-top: 1px solid var(--gray-200);
+    padding-top: var(--spacing-3);
+}
+
+.event-audience {
+    border-top: 1px solid var(--gray-200);
+    padding-top: var(--spacing-3);
+}
+
+.event-reminder {
+    border-top: 1px solid var(--gray-200);
+    padding-top: var(--spacing-3);
+    font-size: var(--font-size-sm);
+}
+
+/* Badges par type d'événement */
+.badge-meeting { background: var(--success-bg); color: var(--success); }
+.badge-payment_deadline { background: var(--warning-bg); color: var(--warning); }
+.badge-other { background: var(--info-bg); color: var(--info); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .event-datetime {
+        padding: var(--spacing-2);
+    }
+    
+    .event-datetime .fw-semibold {
+        font-size: var(--font-size-sm);
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===== ANIMATIONS D'ENTRÉE =====
+    const eventCards = document.querySelectorAll('.event-card');
+    eventCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // ===== FILTRES RAPIDES (si ajoutés plus tard) =====
+    // Préparé pour l'ajout de filtres par type d'événement
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            // Logique de filtrage à implémenter
+            console.log('Filtre:', filter);
+        });
+    });
+});
+</script>
+{% endblock %}

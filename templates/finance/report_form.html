@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nouveau Rapport - SyndicPro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- ===== EN-TÊTE DE PAGE ===== -->
+    {% include 'components/page_header.html' with title="Nouveau Rapport" subtitle="Signalez un problème ou partagez une observation" icon="fas fa-plus-circle" %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>Informations du Rapport
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- ===== TITRE ===== -->
+                        <div class="mb-4">
+                            {% include 'components/form_field.html' with field=form.title label="Titre du rapport" icon="fas fa-heading" required=True %}
+                        </div>
+                        
+                        <!-- ===== DESCRIPTION ===== -->
+                        <div class="mb-4">
+                            {% include 'components/form_field.html' with field=form.description label="Description détaillée" icon="fas fa-align-left" required=True %}
+                        </div>
+                        
+                        <!-- ===== CATÉGORIE ===== -->
+                        <div class="mb-4">
+                            {% include 'components/form_field.html' with field=form.category label="Catégorie" icon="fas fa-tags" required=True %}
+                        </div>
+                        
+                        <!-- ===== LOCALISATION ===== -->
+                        <div class="mb-4">
+                            {% include 'components/form_field.html' with field=form.location label="Localisation (optionnelle)" icon="fas fa-map-marker-alt" placeholder="Ex: 3ème étage, Appartement 15, Parking..." %}
+                        </div>
+                        
+                        <!-- ===== PHOTO ===== -->
+                        <div class="mb-4">
+                            <label for="{{ form.photo.id_for_label }}" class="form-label">
+                                <i class="fas fa-camera me-2"></i>{{ form.photo.label }}
+                            </label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="{{ form.photo.id_for_label }}" 
+                                   name="{{ form.photo.name }}" 
+                                   accept="image/*"
+                                   onchange="previewImage(this)">
+                            <div class="form-text">
+                                Formats acceptés : JPEG, PNG, GIF, WebP. Taille maximale : 5MB
+                            </div>
+                            <div id="imagePreview" class="mt-3" style="display: none;">
+                                <img id="previewImg" src="" alt="Aperçu" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                        </div>
+                        
+                        <!-- ===== INFORMATIONS UTILES ===== -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle me-2"></i>Conseils pour un bon rapport
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Soyez précis dans votre description</li>
+                                <li>Indiquez la localisation si possible</li>
+                                <li>Ajoutez une photo si elle peut aider à comprendre le problème</li>
+                                <li>Choisissez la bonne catégorie pour faciliter le traitement</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- ===== BOUTONS ===== -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'finance:report_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Enregistrer le Rapport
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+// Validation du formulaire
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

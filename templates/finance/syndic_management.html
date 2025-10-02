@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Syndics - Syndic{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <div class="page-header-icon">
+            <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="page-header-text">
+            <h1>Gestion des Syndics</h1>
+            <p>Créez et gérez les comptes des syndics</p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'finance:syndic_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouveau Syndic
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="dashboard-header">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">{{ total_syndics }}</div>
+            <div class="stat-label">Total Syndics</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">{{ active_syndics }}</div>
+            <div class="stat-label">Actifs</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">{{ total_syndics|add:"-"|add:active_syndics }}</div>
+            <div class="stat-label">Inactifs</div>
+        </div>
+    </div>
+</div>
+
+<!-- Syndics List -->
+<div class="modern-form">
+    <div class="form-header">
+        <h3>
+            <i class="fas fa-list me-2"></i>
+            Liste des Syndics
+        </h3>
+        <p>Gérez les comptes des syndics de votre système</p>
+    </div>
+    
+    {% if syndics %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            <i class="fas fa-user me-2"></i>Nom d'utilisateur
+                        </th>
+                        <th>
+                            <i class="fas fa-id-card me-2"></i>Nom complet
+                        </th>
+                        <th>
+                            <i class="fas fa-envelope me-2"></i>Email
+                        </th>
+                        <th>
+                            <i class="fas fa-phone me-2"></i>Téléphone
+                        </th>
+                        <th>
+                            <i class="fas fa-toggle-on me-2"></i>Statut
+                        </th>
+                        <th>
+                            <i class="fas fa-calendar me-2"></i>Date de création
+                        </th>
+                        <th>
+                            <i class="fas fa-cogs me-2"></i>Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for syndic in syndics %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-3">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div>
+                                    <strong>{{ syndic.username }}</strong>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if syndic.get_full_name %}
+                                {{ syndic.get_full_name }}
+                            {% else %}
+                                <span class="text-muted">Non renseigné</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if syndic.email %}
+                                <a href="mailto:{{ syndic.email }}" class="text-decoration-none">
+                                    {{ syndic.email }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Non renseigné</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if syndic.phone %}
+                                <a href="tel:{{ syndic.phone }}" class="text-decoration-none">
+                                    {{ syndic.phone }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Non renseigné</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if syndic.is_active %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Actif
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times me-1"></i>Inactif
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ syndic.date_joined|date:"d/m/Y" }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'finance:syndic_detail' syndic.pk %}" 
+                                   class="btn btn-sm btn-outline-info" 
+                                   title="Voir les détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'finance:syndic_update' syndic.pk %}" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Pagination des syndics">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h3>Aucun syndic trouvé</h3>
+            <p>Il n'y a actuellement aucun syndic dans le système.</p>
+            <a href="{% url 'finance:syndic_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Créer le premier syndic
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="info-section">
+    <div class="info-header">
+        <h3>
+            <i class="fas fa-lightbulb me-2"></i>
+            Actions rapides
+        </h3>
+    </div>
+    
+    <div class="info-content">
+        <div class="info-item">
+            <h4>
+                <i class="fas fa-plus-circle me-2"></i>
+                Créer un syndic
+            </h4>
+            <p>Ajoutez un nouveau syndic au système avec toutes les permissions nécessaires.</p>
+            <a href="{% url 'finance:syndic_create' %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-plus me-1"></i>Nouveau syndic
+            </a>
+        </div>
+        
+        <div class="info-item">
+            <h4>
+                <i class="fas fa-shield-alt me-2"></i>
+                Permissions des syndics
+            </h4>
+            <p>Les syndics peuvent :</p>
+            <ul class="info-list">
+                <li><i class="fas fa-check me-2"></i>Gérer les résidents</li>
+                <li><i class="fas fa-check me-2"></i>Créer des documents</li>
+                <li><i class="fas fa-check me-2"></i>Envoyer des notifications</li>
+                <li><i class="fas fa-check me-2"></i>Consulter les statistiques</li>
+            </ul>
+        </div>
+        
+        <div class="info-item">
+            <h4>
+                <i class="fas fa-key me-2"></i>
+                Mot de passe par défaut
+            </h4>
+            <p>Le mot de passe par défaut pour les nouveaux syndics est : <code>syndic123</code></p>
+            <p class="text-muted small">Les syndics devront changer ce mot de passe lors de leur première connexion.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

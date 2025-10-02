@@ -1,0 +1,78 @@
+<!-- ===== COMPOSANT TABLEAU DE DONNÉES ===== -->
+
+<div class="table-responsive">
+    <table class="table-modern">
+        {% if headers %}
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th>
+                    {% if header.icon %}<i class="{{ header.icon }} me-2"></i>{% endif %}
+                    {{ header.label }}
+                    {% if header.sortable %}
+                    <i class="fas fa-sort ms-2 text-muted"></i>
+                    {% endif %}
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        {% endif %}
+        
+        <tbody>
+            {% if rows %}
+            {% for row in rows %}
+            <tr {% if row.class %}class="{{ row.class }}"{% endif %}>
+                {% for cell in row.cells %}
+                <td>
+                    {% if cell.type == 'badge' %}
+                    <span class="badge-modern badge-{{ cell.color|default:'secondary' }}">
+                        {% if cell.icon %}<i class="{{ cell.icon }} me-1"></i>{% endif %}
+                        {{ cell.value }}
+                    </span>
+                    {% elif cell.type == 'amount' %}
+                    <span class="fw-bold text-{{ cell.color|default:'primary' }}">
+                        {{ cell.value|floatformat:2 }} DH
+                    </span>
+                    {% elif cell.type == 'date' %}
+                    <span class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ cell.value|date:"d/m/Y" }}
+                    </span>
+                    {% elif cell.type == 'actions' %}
+                    <div class="d-flex gap-1">
+                        {% for action in cell.actions %}
+                        <a href="{{ action.url }}" class="btn-modern btn-outline btn-sm" title="{{ action.title }}">
+                            <i class="{{ action.icon }}"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {{ cell.value }}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="{{ headers|length|default:1 }}" class="text-center py-5 text-muted">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <h6>{{ empty_message|default:"Aucune donnée disponible" }}</h6>
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.btn-sm {
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-xs);
+}
+
+.table-responsive {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+</style>

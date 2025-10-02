@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détails de la Dépense - {{ depense.titre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    .detail-body {
+        padding: 2rem;
+    }
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .info-value {
+        font-weight: 500;
+        color: #212529;
+    }
+    .amount-display {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+        text-align: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        margin: 1rem 0;
+    }
+    .category-badge {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .status-badge {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .description-box {
+        background: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 1.5rem;
+        border-radius: 0 10px 10px 0;
+        margin: 1rem 0;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+    .btn-custom {
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .timeline-item {
+        position: relative;
+        padding-left: 3rem;
+        padding-bottom: 1.5rem;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 0.75rem;
+        top: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        background: #007bff;
+        border-radius: 50%;
+    }
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        left: 1rem;
+        top: 1rem;
+        width: 2px;
+        height: calc(100% - 0.5rem);
+        background: #dee2e6;
+    }
+    .timeline-item:last-child::after {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- Carte principale -->
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h1 class="mb-2">{{ depense.titre }}</h1>
+                    <p class="mb-0 opacity-75">Détails de la dépense</p>
+                </div>
+                
+                <div class="detail-body">
+                    <!-- Montant principal -->
+                    <div class="amount-display">
+                        {{ depense.montant|floatformat:2 }} DH
+                        {% if depense.is_grosse_depense %}
+                        <br><span class="badge bg-danger mt-2">
+                            <i class="fas fa-exclamation-triangle"></i> Grosse Dépense
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Informations principales -->
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-folder text-warning"></i>
+                            Catégorie
+                        </div>
+                        <div class="info-value">
+                            <span class="category-badge 
+                                {% if depense.categorie == 'ENTRETIEN' %}bg-info text-white
+                                {% elif depense.categorie == 'REPARATION' %}bg-warning text-dark
+                                {% elif depense.categorie == 'FACTURE' %}bg-success text-white
+                                {% else %}bg-secondary text-white{% endif %}">
+                                {% if depense.categorie == 'ENTRETIEN' %}<i class="fas fa-tools"></i>
+                                {% elif depense.categorie == 'REPARATION' %}<i class="fas fa-wrench"></i>
+                                {% elif depense.categorie == 'FACTURE' %}<i class="fas fa-file-invoice"></i>
+                                {% else %}<i class="fas fa-ellipsis-h"></i>{% endif %}
+                                {{ depense.get_categorie_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar text-primary"></i>
+                            Date de la dépense
+                        </div>
+                        <div class="info-value">
+                            {{ depense.date_depense|date:"l d F Y" }}
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-user text-info"></i>
+                            Ajoutée par
+                        </div>
+                        <div class="info-value">
+                            {{ depense.ajoute_par.get_full_name|default:depense.ajoute_par.username }}
+                            <span class="badge bg-primary ms-2">{{ depense.ajoute_par.get_role_display }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    {% if depense.description %}
+                    <div class="description-box">
+                        <h6 class="text-primary mb-2">
+                            <i class="fas fa-align-left"></i> Description
+                        </h6>
+                        <p class="mb-0">{{ depense.description|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Timeline -->
+                    <div class="mt-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-clock"></i> Historique
+                        </h6>
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>Dépense créée</strong><br>
+                                    <small class="text-muted">par {{ depense.ajoute_par.get_full_name|default:depense.ajoute_par.username }}</small>
+                                </div>
+                                <small class="text-muted">{{ depense.created_at|date:"d/m/Y à H:i" }}</small>
+                            </div>
+                        </div>
+                        {% if depense.updated_at != depense.created_at %}
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>Dernière modification</strong><br>
+                                    <small class="text-muted">Dépense mise à jour</small>
+                                </div>
+                                <small class="text-muted">{{ depense.updated_at|date:"d/m/Y à H:i" }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if depense.is_grosse_depense %}
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>Notification envoyée</strong><br>
+                                    <small class="text-muted">Tous les résidents ont été notifiés</small>
+                                </div>
+                                <small class="text-muted">{{ depense.created_at|date:"d/m/Y à H:i" }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="action-buttons">
+                        <a href="{% url 'finance:depense_list' %}" class="btn btn-outline-secondary btn-custom">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                        
+                        {% if user.role in 'SUPERADMIN,SYNDIC' %}
+                        <a href="{% url 'finance:depense_update' depense.pk %}" class="btn btn-warning btn-custom">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        
+                        <button type="button" class="btn btn-danger btn-custom" onclick="deleteExpense()">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte d'informations supplémentaires -->
+            <div class="detail-card">
+                <div class="detail-body">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-info-circle"></i> Informations Système
+                    </h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="fas fa-hashtag text-muted"></i>
+                                    ID de la dépense
+                                </div>
+                                <div class="info-value">
+                                    <code>#{{ depense.pk }}</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="fas fa-bell text-muted"></i>
+                                    Notification automatique
+                                </div>
+                                <div class="info-value">
+                                    {% if depense.is_grosse_depense %}
+                                    <span class="status-badge bg-success text-white">
+                                        <i class="fas fa-check"></i> Activée
+                                    </span>
+                                    {% else %}
+                                    <span class="status-badge bg-secondary text-white">
+                                        <i class="fas fa-times"></i> Désactivée
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h6>Êtes-vous sûr de vouloir supprimer cette dépense ?</h6>
+                    <p class="text-muted mb-2"><strong>{{ depense.titre }}</strong></p>
+                    <p class="text-muted mb-2">Montant: <strong>{{ depense.montant|floatformat:2 }} DH</strong></p>
+                    <p class="text-danger"><strong>Cette action est irréversible.</strong></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <form method="post" action="{% url 'finance:depense_delete' depense.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function deleteExpense() {
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+    
+    // Animation d'entrée
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.detail-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+    });
+</script>
+{% endblock %}

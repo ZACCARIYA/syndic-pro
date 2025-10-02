@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if is_resident_view %}Mes Notifications{% else %}Gestion des Notifications{% endif %} - Syndic
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-bell me-2"></i>
+        {% if is_resident_view %}Mes Notifications{% else %}Gestion des Notifications{% endif %}
+    </h1>
+    {% if not is_resident_view %}
+        <a href="{% url 'finance:notification_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Nouvelle Notification
+        </a>
+    {% endif %}
+</div>
+
+<!-- Filter Options -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label">Type de notification</label>
+                <select class="form-select" id="typeFilter">
+                    <option value="">Tous les types</option>
+                    <option value="PAYMENT_REMINDER">Rappel de paiement</option>
+                    <option value="PAYMENT_CONFIRMATION">Confirmation de paiement</option>
+                    <option value="OVERDUE_NOTICE">Avis de retard</option>
+                    <option value="LEGAL_NOTICE">Avis légal</option>
+                    <option value="GENERAL_ANNOUNCEMENT">Annonce générale</option>
+                    <option value="MEETING_NOTICE">Convocation réunion</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Priorité</label>
+                <select class="form-select" id="priorityFilter">
+                    <option value="">Toutes les priorités</option>
+                    <option value="LOW">Faible</option>
+                    <option value="MEDIUM">Moyenne</option>
+                    <option value="HIGH">Élevée</option>
+                    <option value="URGENT">Urgente</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Statut</label>
+                <select class="form-select" id="statusFilter">
+                    <option value="">Tous les statuts</option>
+                    <option value="read">Lues</option>
+                    <option value="unread">Non lues</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times me-1"></i>Effacer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if notifications %}
+            <div class="list-group" id="notificationsList">
+                {% for notification in notifications %}
+                    <div class="list-group-item notification-item" 
+                         data-type="{{ notification.notification_type }}"
+                         data-priority="{{ notification.priority }}"
+                         data-read="{{ notification.is_read|yesno:'read,unread' }}">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="mb-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0 me-2">{{ notification.title }}</h6>
+                                    <span class="badge bg-{% if notification.priority == 'URGENT' %}danger{% elif notification.priority == 'HIGH' %}warning{% elif notification.priority == 'MEDIUM' %}info{% else %}secondary{% endif %} me-2">
+                                        {{ notification.get_priority_display }}
+                                    </span>
+                                    <span class="badge bg-primary me-2">
+                                        {{ notification.get_notification_type_display }}
+                                    </span>
+                                    {% if not notification.is_read %}
+                                        <span class="badge bg-success">Nouveau</span>
+                                    {% endif %}
+                                </div>
+                                <p class="mb-1">{{ notification.message|truncatechars:150 }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>{{ notification.sender.get_full_name|default:notification.sender.username }}
+                                    <i class="fas fa-clock me-1 ms-2"></i>{{ notification.created_at|date:"d/m/Y H:i" }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <a href="{% url 'finance:notification_detail' notification.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>Voir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <nav aria-label="Pagination des notifications" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">&laquo; Première</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Précédente</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Suivante</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Dernière &raquo;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-bell"></i>
+                <h5>
+                    {% if is_resident_view %}
+                        Aucune notification
+                    {% else %}
+                        Aucune notification créée
+                    {% endif %}
+                </h5>
+                <p>
+                    {% if is_resident_view %}
+                        Vous recevrez des notifications du syndic ici.
+                    {% else %}
+                        Commencez par créer des notifications pour les résidents.
+                    {% endif %}
+                </p>
+                {% if not is_resident_view %}
+                    <a href="{% url 'finance:notification_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Créer la première notification
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function clearFilters() {
+    document.getElementById('typeFilter').value = '';
+    document.getElementById('priorityFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    filterNotifications();
+}
+
+function filterNotifications() {
+    const typeFilter = document.getElementById('typeFilter').value;
+    const priorityFilter = document.getElementById('priorityFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const notifications = document.querySelectorAll('.notification-item');
+    
+    notifications.forEach(notification => {
+        let show = true;
+        
+        if (typeFilter && notification.dataset.type !== typeFilter) {
+            show = false;
+        }
+        
+        if (priorityFilter && notification.dataset.priority !== priorityFilter) {
+            show = false;
+        }
+        
+        if (statusFilter && notification.dataset.read !== statusFilter) {
+            show = false;
+        }
+        
+        notification.style.display = show ? '' : 'none';
+    });
+}
+
+// Add event listeners
+document.getElementById('typeFilter').addEventListener('change', filterNotifications);
+document.getElementById('priorityFilter').addEventListener('change', filterNotifications);
+document.getElementById('statusFilter').addEventListener('change', filterNotifications);
+</script>
+{% endblock %}
+
+

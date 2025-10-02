@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Créer un Événement{% endblock %}
+
+{% block content %}
+<!-- ===== EN-TÊTE DE PAGE ===== -->
+{% include 'components/page_header.html' with title="Créer un Événement" subtitle="Planifiez une réunion ou une échéance" icon="fas fa-calendar-plus" actions=page_actions|default:None %}
+
+<div class="container">
+    <!-- ===== FORMULAIRE DE CRÉATION ===== -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Détails de l'Événement
+                    </h5>
+                </div>
+                <div class="card-body-modern">
+                    <form method="post" class="modern-form">
+                        {% csrf_token %}
+                        
+                        <!-- ===== INFORMATIONS PRINCIPALES ===== -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.title label="Titre de l'événement" icon="fas fa-heading" required=True placeholder="Ex: Réunion du conseil" %}
+                            </div>
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.event_type label="Type d'événement" icon="fas fa-tag" required=True %}
+                            </div>
+                        </div>
+                        
+                        <!-- ===== DATES ET HEURES ===== -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.start_at label="Date et heure de début" icon="fas fa-play" required=True %}
+                            </div>
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.end_at label="Date et heure de fin" icon="fas fa-stop" required=True %}
+                            </div>
+                        </div>
+                        
+                        <!-- ===== AUDIENCE ET RAPPEL ===== -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.audience label="Audience" icon="fas fa-users" required=True %}
+                            </div>
+                            <div class="col-md-6">
+                                {% include 'components/form_field.html' with field=form.reminder_minutes_before label="Rappel (minutes avant)" icon="fas fa-bell" help_text="Temps en minutes avant l'événement" %}
+                            </div>
+                        </div>
+                        
+                        <!-- ===== PARTICIPANTS SPÉCIFIQUES ===== -->
+                        {% if form.participants %}
+                        <div class="mb-4">
+                            {% include 'components/form_field.html' with field=form.participants label="Participants spécifiques" icon="fas fa-user-check" help_text="Laissez vide pour inclure tous les résidents" %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- ===== DESCRIPTION ===== -->
+                        <div class="mb-4">
+                            {% include 'components/form_field.html' with field=form.description label="Description" icon="fas fa-align-left" rows=4 placeholder="Détails de l'événement, ordre du jour, etc." %}
+                        </div>
+                        
+                        <!-- ===== ACTIONS DU FORMULAIRE ===== -->
+                        <div class="form-actions d-flex gap-3 justify-content-end">
+                            <a href="{% url 'finance:calendar' %}" class="btn-modern btn-outline">
+                                <i class="fas fa-times"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn-modern btn-primary">
+                                <i class="fas fa-save"></i>Créer l'Événement
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ===== AIDE CONTEXTUELLE ===== -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-8">
+            <div class="card-modern">
+                <div class="card-body-modern">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-lightbulb me-2"></i>Conseils pour créer un événement
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Réunions :</strong> Planifiez avec 24h d'avance
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Échéances :</strong> Définissez des rappels appropriés
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Participants :</strong> Sélectionnez selon le type
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Description :</strong> Soyez précis et clair
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== STYLES SPÉCIFIQUES AU FORMULAIRE D'ÉVÉNEMENT ===== */
+.modern-form {
+    background: transparent;
+}
+
+.form-actions {
+    border-top: 1px solid var(--gray-200);
+    padding-top: var(--spacing-4);
+    margin-top: var(--spacing-4);
+}
+
+/* Amélioration des champs de date */
+input[type="datetime-local"] {
+    background: var(--white);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-base);
+    transition: var(--transition);
+}
+
+input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Amélioration des selects */
+select.form-control {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Amélioration des textareas */
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Styles pour les listes d'aide */
+.list-unstyled li {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-1) 0;
+}
+
+/* Responsive pour les formulaires */
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn-modern {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===== VALIDATION DES DATES =====
+    const startInput = document.querySelector('input[name="start_at"]');
+    const endInput = document.querySelector('input[name="end_at"]');
+    
+    if (startInput && endInput) {
+        startInput.addEventListener('change', function() {
+            if (this.value && endInput.value && this.value >= endInput.value) {
+                // Ajuster automatiquement la fin si elle est antérieure au début
+                const startDate = new Date(this.value);
+                startDate.setHours(startDate.getHours() + 1);
+                endInput.value = startDate.toISOString().slice(0, 16);
+            }
+        });
+        
+        endInput.addEventListener('change', function() {
+            if (this.value && startInput.value && this.value <= startInput.value) {
+                // Ajuster automatiquement le début si la fin est antérieure
+                const endDate = new Date(this.value);
+                endDate.setHours(endDate.getHours() - 1);
+                startInput.value = endDate.toISOString().slice(0, 16);
+            }
+        });
+    }
+    
+    // ===== AMÉLIORATION DE L'UX =====
+    const form = document.querySelector('.modern-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Ajouter un état de chargement
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+    
+    // ===== SUGGESTIONS DE TITRES =====
+    const titleInput = document.querySelector('input[name="title"]');
+    if (titleInput) {
+        const suggestions = [
+            'Réunion du conseil',
+            'Assemblée générale',
+            'Maintenance ascenseur',
+            'Nettoyage commun',
+            'Inspection sécurité'
+        ];
+        
+        titleInput.addEventListener('focus', function() {
+            if (!this.value) {
+                this.placeholder = 'Ex: ' + suggestions[Math.floor(Math.random() * suggestions.length)];
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

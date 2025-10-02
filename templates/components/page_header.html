@@ -1,0 +1,60 @@
+<!-- ===== COMPOSANT EN-TÊTE DE PAGE ===== -->
+
+<div class="page-header mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title text-primary mb-2">
+                    {% if icon %}<i class="{{ icon }} me-3"></i>{% endif %}
+                    {{ title }}
+                </h1>
+                {% if subtitle %}
+                <p class="page-subtitle text-muted mb-0">{{ subtitle }}</p>
+                {% endif %}
+            </div>
+            {% if actions %}
+            <div class="col-md-4 text-end">
+                <div class="page-actions d-flex gap-2 justify-content-end flex-wrap">
+                    {% for action in actions %}
+                    <a href="{{ action.url }}" class="btn-modern btn-{{ action.type|default:'primary' }}">
+                        {% if action.icon %}<i class="{{ action.icon }}"></i>{% endif %}
+                        {{ action.label }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.page-header {
+    background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+    padding: var(--spacing-8) 0;
+    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+    margin-bottom: var(--spacing-8);
+}
+
+.page-title {
+    font-size: var(--font-size-3xl);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.page-subtitle {
+    font-size: var(--font-size-lg);
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .page-actions {
+        justify-content: center !important;
+        margin-top: var(--spacing-4);
+    }
+}
+</style>

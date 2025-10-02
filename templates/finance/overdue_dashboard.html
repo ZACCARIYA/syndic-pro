@@ -1,0 +1,529 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tableau de Bord des Impayés{% endblock %}
+
+{% block extra_css %}
+<style>
+    .overdue-hero {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .overdue-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse-warning 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-warning {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(5deg); }
+    }
+    
+    .urgency-card {
+        border-radius: 15px;
+        border: none;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .urgency-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .urgency-due-soon {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+    
+    .urgency-overdue-30 {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: white;
+    }
+    
+    .urgency-overdue-60 {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+    }
+    
+    .urgency-critical {
+        background: linear-gradient(135deg, #7c2d12 0%, #451a03 100%);
+        color: white;
+        animation: pulse-critical 2s infinite;
+    }
+    
+    @keyframes pulse-critical {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(124, 45, 18, 0.7); }
+        50% { box-shadow: 0 0 0 10px rgba(124, 45, 18, 0); }
+    }
+    
+    .document-mini-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-left: 4px solid;
+        transition: all 0.2s ease;
+    }
+    
+    .document-mini-card:hover {
+        background: white;
+        transform: translateX(5px);
+    }
+    
+    .document-mini-card.due-soon {
+        border-left-color: #f59e0b;
+    }
+    
+    .document-mini-card.overdue-30 {
+        border-left-color: #f97316;
+    }
+    
+    .document-mini-card.overdue-60 {
+        border-left-color: #dc2626;
+    }
+    
+    .document-mini-card.critical {
+        border-left-color: #7c2d12;
+    }
+    
+    .notification-log {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-left: 3px solid #667eea;
+    }
+    
+    .run-detection-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .run-detection-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        color: white;
+    }
+    
+    .run-detection-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .run-detection-btn:hover::before {
+        left: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="overdue-hero">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="fas fa-exclamation-triangle me-3"></i>
+                    Tableau de Bord des Impayés
+                </h1>
+                <p class="mb-0 opacity-75">
+                    Surveillance automatique des paiements en retard et gestion des relances
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="run-detection-btn" onclick="runOverdueDetection()">
+                    <i class="fas fa-search me-2"></i>Détecter les Impayés
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques Générales -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="urgency-card urgency-due-soon">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-clock fa-3x mb-3 opacity-75"></i>
+                    <h3 class="mb-1">{{ stats.due_soon_count }}</h3>
+                    <p class="mb-0">Échéances Proches</p>
+                    <small class="opacity-75">(7 jours)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="urgency-card urgency-overdue-30">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-exclamation-circle fa-3x mb-3 opacity-75"></i>
+                    <h3 class="mb-1">{{ stats.overdue_30_count }}</h3>
+                    <p class="mb-0">Retard Modéré</p>
+                    <small class="opacity-75">(30-59 jours)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="urgency-card urgency-overdue-60">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3 opacity-75"></i>
+                    <h3 class="mb-1">{{ stats.overdue_60_count }}</h3>
+                    <p class="mb-0">Retard Important</p>
+                    <small class="opacity-75">(60-89 jours)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="urgency-card urgency-critical">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-skull-crossbones fa-3x mb-3 opacity-75"></i>
+                    <h3 class="mb-1">{{ stats.critical_90_count }}</h3>
+                    <p class="mb-0">Situation Critique</p>
+                    <small class="opacity-75">(90+ jours)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Montant Total des Impayés -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="modern-card text-center p-4">
+                <h4 class="text-danger mb-2">
+                    <i class="fas fa-coins me-2"></i>Montant Total des Impayés
+                </h4>
+                <h2 class="text-danger mb-0">{{ total_overdue_amount|floatformat:2 }} DH</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Détail par Catégorie -->
+    <div class="row">
+        <!-- Échéances Proches -->
+        <div class="col-md-6 mb-4">
+            <div class="modern-card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Échéances Proches (7 jours)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if due_soon %}
+                    {% for doc in due_soon %}
+                    <div class="document-mini-card due-soon">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 text-primary">{{ doc.title }}</h6>
+                                <small class="text-muted">
+                                    {{ doc.resident.get_full_name|default:doc.resident.username }}
+                                    {% if doc.resident.apartment %} - Apt. {{ doc.resident.apartment }}{% endif %}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-warning">{{ doc.amount|floatformat:2 }} DH</div>
+                                <small class="text-muted">Échéance: {{ doc.due_date|date:"d/m" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                        <p>Aucune échéance proche</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Situations Critiques -->
+        <div class="col-md-6 mb-4">
+            <div class="modern-card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-skull-crossbones me-2"></i>Situations Critiques (90+ jours)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if critical_90 %}
+                    {% for doc in critical_90 %}
+                    <div class="document-mini-card critical">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 text-danger">{{ doc.title }}</h6>
+                                <small class="text-muted">
+                                    {{ doc.resident.get_full_name|default:doc.resident.username }}
+                                    {% if doc.resident.apartment %} - Apt. {{ doc.resident.apartment }}{% endif %}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-danger">{{ doc.amount|floatformat:2 }} DH</div>
+                                <small class="text-danger">{{ doc.days_overdue }} jours de retard</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="fas fa-smile fa-2x mb-2"></i>
+                        <p>Aucune situation critique</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retards Modérés et Importants -->
+    <div class="row">
+        <!-- Retards Modérés (30-59 jours) -->
+        <div class="col-md-6 mb-4">
+            <div class="modern-card">
+                <div class="card-header" style="background: #f97316; color: white;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>Retards Modérés (30-59 jours)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if overdue_30 %}
+                    {% for doc in overdue_30 %}
+                    <div class="document-mini-card overdue-30">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1" style="color: #f97316;">{{ doc.title }}</h6>
+                                <small class="text-muted">
+                                    {{ doc.resident.get_full_name|default:doc.resident.username }}
+                                    {% if doc.resident.apartment %} - Apt. {{ doc.resident.apartment }}{% endif %}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold" style="color: #f97316;">{{ doc.amount|floatformat:2 }} DH</div>
+                                <small style="color: #f97316;">{{ doc.days_overdue }} jours de retard</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="fas fa-thumbs-up fa-2x mb-2"></i>
+                        <p>Aucun retard modéré</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Retards Importants (60-89 jours) -->
+        <div class="col-md-6 mb-4">
+            <div class="modern-card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Retards Importants (60-89 jours)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if overdue_60 %}
+                    {% for doc in overdue_60 %}
+                    <div class="document-mini-card overdue-60">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 text-danger">{{ doc.title }}</h6>
+                                <small class="text-muted">
+                                    {{ doc.resident.get_full_name|default:doc.resident.username }}
+                                    {% if doc.resident.apartment %} - Apt. {{ doc.resident.apartment }}{% endif %}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-danger">{{ doc.amount|floatformat:2 }} DH</div>
+                                <small class="text-danger">{{ doc.days_overdue }} jours de retard</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                        <p>Aucun retard important</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historique des Notifications -->
+    <div class="row">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bell me-2"></i>Notifications Récentes (30 derniers jours)
+                        </h5>
+                        <span class="badge bg-light text-dark">{{ stats.total_notifications }} envoyées</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_notifications %}
+                    {% for notif in recent_notifications %}
+                    <div class="notification-log">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 text-primary">{{ notif.get_notification_type_display }}</h6>
+                                <p class="mb-1">{{ notif.document.title }}</p>
+                                <small class="text-muted">
+                                    {{ notif.document.resident.get_full_name|default:notif.document.resident.username }}
+                                    - {{ notif.document.amount|floatformat:2 }} DH
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="mb-1">
+                                    {% if notif.sent_to_resident %}
+                                    <span class="badge bg-success me-1">
+                                        <i class="fas fa-user"></i> Résident
+                                    </span>
+                                    {% endif %}
+                                    {% if notif.sent_to_syndic %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-user-tie"></i> Syndic
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ notif.created_at|date:"d/m/Y H:i" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <h6>Aucune notification récente</h6>
+                        <p>Les notifications d'impayés apparaîtront ici</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Résultats -->
+<div class="modal fade" id="detectionResultModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-search me-2"></i>Résultats de la Détection
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="detectionResults">
+                    <div class="text-center py-4">
+                        <div class="spinner-modern"></div>
+                        <p class="mt-3">Détection en cours...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" onclick="location.reload()">
+                    <i class="fas fa-sync me-2"></i>Actualiser la Page
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function runOverdueDetection() {
+        // Afficher le modal
+        const modal = new bootstrap.Modal(document.getElementById('detectionResultModal'));
+        modal.show();
+        
+        // Exécuter la détection
+        fetch('{% url "finance:run_overdue_detection" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            const resultsDiv = document.getElementById('detectionResults');
+            if (data.success) {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle me-2"></i>Détection Terminée</h6>
+                        <p class="mb-0">${data.message}</p>
+                    </div>
+                    <div class="bg-light p-3 rounded">
+                        <h6>Détails :</h6>
+                        <pre class="mb-0" style="font-size: 0.9rem;">${data.output}</pre>
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Erreur</h6>
+                        <p class="mb-0">${data.error}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            const resultsDiv = document.getElementById('detectionResults');
+            resultsDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Erreur de Communication</h6>
+                    <p class="mb-0">Impossible de contacter le serveur</p>
+                </div>
+            `;
+        });
+    }
+    
+    // Animation d'entrée pour les cartes
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.urgency-card, .modern-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 150);
+        });
+    });
+</script>
+
+<!-- Token CSRF pour les requêtes AJAX -->
+{% csrf_token %}
+{% endblock %}

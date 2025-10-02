@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if object %}Modifier la Dépense{% else %}Nouvelle Dépense{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    .form-body {
+        padding: 2rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .btn-custom {
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+    }
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .category-preview {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+    .category-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .category-badge:hover {
+        transform: scale(1.05);
+    }
+    .amount-preview {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #28a745;
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2 class="mb-0">
+                        <i class="fas fa-receipt fa-2x mb-3"></i><br>
+                        {% if object %}
+                        Modifier la Dépense
+                        {% else %}
+                        Nouvelle Dépense
+                        {% endif %}
+                    </h2>
+                    {% if object %}
+                    <p class="mb-0 opacity-75">Modification de "{{ object.titre }}"</p>
+                    {% else %}
+                    <p class="mb-0 opacity-75">Enregistrer une nouvelle dépense pour l'immeuble</p>
+                    {% endif %}
+                </div>
+                
+                <div class="form-body">
+                    <form method="post" id="depenseForm">
+                        {% csrf_token %}
+                        
+                        <!-- Titre -->
+                        <div class="form-group">
+                            <label for="{{ form.titre.id_for_label }}" class="form-label">
+                                <i class="fas fa-tag text-primary"></i> Titre de la dépense
+                            </label>
+                            {{ form.titre }}
+                            {% if form.titre.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.titre.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left text-info"></i> Description (optionnel)
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.description.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">Détails supplémentaires sur cette dépense</small>
+                        </div>
+
+                        <!-- Montant -->
+                        <div class="form-group">
+                            <label for="{{ form.montant.id_for_label }}" class="form-label">
+                                <i class="fas fa-coins text-success"></i> Montant (DH)
+                            </label>
+                            {{ form.montant }}
+                            {% if form.montant.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.montant.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div id="amountPreview" class="amount-preview" style="display: none;">
+                                0.00 DH
+                            </div>
+                        </div>
+
+                        <!-- Catégorie -->
+                        <div class="form-group">
+                            <label for="{{ form.categorie.id_for_label }}" class="form-label">
+                                <i class="fas fa-folder text-warning"></i> Catégorie
+                            </label>
+                            {{ form.categorie }}
+                            {% if form.categorie.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.categorie.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="category-preview">
+                                <div class="category-badge bg-info text-white" data-category="ENTRETIEN">
+                                    <i class="fas fa-tools"></i> Entretien
+                                </div>
+                                <div class="category-badge bg-warning text-dark" data-category="REPARATION">
+                                    <i class="fas fa-wrench"></i> Réparation
+                                </div>
+                                <div class="category-badge bg-success text-white" data-category="FACTURE">
+                                    <i class="fas fa-file-invoice"></i> Facture
+                                </div>
+                                <div class="category-badge bg-secondary text-white" data-category="AUTRE">
+                                    <i class="fas fa-ellipsis-h"></i> Autre
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date de dépense -->
+                        <div class="form-group">
+                            <label for="{{ form.date_depense.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar text-primary"></i> Date de la dépense
+                            </label>
+                            {{ form.date_depense }}
+                            {% if form.date_depense.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.date_depense.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Aperçu des notifications -->
+                        <div class="alert alert-info" id="notificationPreview" style="display: none;">
+                            <h6><i class="fas fa-bell"></i> Notification automatique</h6>
+                            <p class="mb-0">Cette dépense sera considérée comme importante (> 1000 DH) et tous les résidents recevront une notification.</p>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <a href="{% url 'finance:depense_list' %}" class="btn btn-outline-secondary btn-custom w-100">
+                                    <i class="fas fa-arrow-left"></i> Retour
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" class="btn btn-primary-custom btn-custom w-100">
+                                    <i class="fas fa-save"></i>
+                                    {% if object %}Modifier{% else %}Enregistrer{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const montantField = document.getElementById('{{ form.montant.id_for_label }}');
+        const categorieField = document.getElementById('{{ form.categorie.id_for_label }}');
+        const amountPreview = document.getElementById('amountPreview');
+        const notificationPreview = document.getElementById('notificationPreview');
+        const categoryBadges = document.querySelectorAll('.category-badge');
+
+        // Configuration des champs
+        if (montantField) {
+            montantField.classList.add('form-control');
+            montantField.setAttribute('placeholder', 'Ex: 1500.00');
+            montantField.setAttribute('step', '0.01');
+            montantField.setAttribute('min', '0');
+        }
+
+        if (categorieField) {
+            categorieField.classList.add('form-select');
+        }
+
+        const titreField = document.getElementById('{{ form.titre.id_for_label }}');
+        if (titreField) {
+            titreField.classList.add('form-control');
+            titreField.setAttribute('placeholder', 'Ex: Réparation ascenseur');
+        }
+
+        const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
+        if (descriptionField) {
+            descriptionField.classList.add('form-control');
+            descriptionField.setAttribute('placeholder', 'Détails de la dépense...');
+            descriptionField.setAttribute('rows', '3');
+        }
+
+        const dateField = document.getElementById('{{ form.date_depense.id_for_label }}');
+        if (dateField) {
+            dateField.classList.add('form-control');
+        }
+
+        // Mise à jour de l'aperçu du montant
+        function updateAmountPreview() {
+            const value = parseFloat(montantField.value) || 0;
+            if (value > 0) {
+                amountPreview.textContent = value.toFixed(2) + ' DH';
+                amountPreview.style.display = 'block';
+                
+                // Afficher l'aperçu des notifications pour les grosses dépenses
+                if (value > 1000) {
+                    notificationPreview.style.display = 'block';
+                } else {
+                    notificationPreview.style.display = 'none';
+                }
+            } else {
+                amountPreview.style.display = 'none';
+                notificationPreview.style.display = 'none';
+            }
+        }
+
+        // Gestion des clics sur les badges de catégorie
+        categoryBadges.forEach(badge => {
+            badge.addEventListener('click', function() {
+                const category = this.getAttribute('data-category');
+                categorieField.value = category;
+                updateCategorySelection();
+            });
+        });
+
+        // Mise à jour de la sélection de catégorie
+        function updateCategorySelection() {
+            const selectedCategory = categorieField.value;
+            categoryBadges.forEach(badge => {
+                if (badge.getAttribute('data-category') === selectedCategory) {
+                    badge.style.transform = 'scale(1.1)';
+                    badge.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+                } else {
+                    badge.style.transform = 'scale(1)';
+                    badge.style.boxShadow = 'none';
+                }
+            });
+        }
+
+        // Événements
+        if (montantField) {
+            montantField.addEventListener('input', updateAmountPreview);
+        }
+        
+        if (categorieField) {
+            categorieField.addEventListener('change', updateCategorySelection);
+        }
+
+        // Initialisation
+        updateAmountPreview();
+        updateCategorySelection();
+
+        // Validation du formulaire
+        document.getElementById('depenseForm').addEventListener('submit', function(e) {
+            const titre = titreField.value.trim();
+            const montant = parseFloat(montantField.value) || 0;
+            
+            if (!titre) {
+                e.preventDefault();
+                alert('Veuillez saisir un titre pour la dépense.');
+                titreField.focus();
+                return;
+            }
+            
+            if (montant <= 0) {
+                e.preventDefault();
+                alert('Veuillez saisir un montant valide.');
+                montantField.focus();
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

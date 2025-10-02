@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes Rapports - SyndicPro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- ===== EN-TÊTE DE PAGE ===== -->
+    {% include 'components/page_header.html' with title="Mes Rapports" subtitle="Gérez vos signalements et rapports" icon="fas fa-clipboard-list" %}
+
+    <!-- ===== STATISTIQUES (SYNDIC/SUPERADMIN) ===== -->
+    {% if user.role in 'SYNDIC,SUPERADMIN' %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            {% include 'components/stats_card.html' with value=total_reports label="Total Rapports" icon="fas fa-clipboard-list" color="primary" %}
+        </div>
+        <div class="col-md-3">
+            {% include 'components/stats_card.html' with value=new_reports label="Nouveaux" icon="fas fa-plus-circle" color="warning" %}
+        </div>
+        <div class="col-md-3">
+            {% include 'components/stats_card.html' with value=in_progress_reports label="En Cours" icon="fas fa-clock" color="info" %}
+        </div>
+        <div class="col-md-3">
+            {% include 'components/stats_card.html' with value=resolved_reports label="Résolus" icon="fas fa-check-circle" color="success" %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== ACTIONS RAPIDES ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Liste des Rapports</h5>
+                    <p class="text-muted mb-0">Consultez et gérez vos rapports</p>
+                </div>
+                <div>
+                    {% if user.role == 'RESIDENT' %}
+                    <a href="{% url 'finance:report_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Nouveau Rapport
+                    </a>
+                    {% else %}
+                    <a href="{% url 'finance:report_management' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-cog me-2"></i>Gestion des Rapports
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== LISTE DES RAPPORTS ===== -->
+    <div class="row">
+        <div class="col-12">
+            {% if reports %}
+                <div class="row">
+                    {% for report in reports %}
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">{{ report.title }}</h6>
+                                    <small class="text-muted">{{ report.get_category_display }}</small>
+                                </div>
+                                <span class="badge bg-{{ report.get_status_display_color }}">
+                                    {{ report.get_status_display }}
+                                </span>
+                            </div>
+                            
+                            <div class="card-body">
+                                <p class="card-text">{{ report.description|truncatewords:20 }}</p>
+                                
+                                {% if report.photo %}
+                                <div class="mb-3">
+                                    <img src="{{ report.photo.url }}" alt="Photo du rapport" class="img-fluid rounded" style="max-height: 150px;">
+                                </div>
+                                {% endif %}
+                                
+                                {% if report.location %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ report.location }}
+                                </p>
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user me-1"></i>{{ report.resident.get_full_name|default:report.resident.username }}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>{{ report.created_at|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'finance:report_detail' report.pk %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>Voir
+                                    </a>
+                                    {% if user.role in 'SYNDIC,SUPERADMIN' %}
+                                    <a href="{% url 'finance:report_update' report.pk %}" class="btn btn-outline-warning btn-sm">
+                                        <i class="fas fa-edit me-1"></i>Modifier
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- ===== PAGINATION ===== -->
+                {% if is_paginated %}
+                <div class="row">
+                    <div class="col-12">
+                        <nav aria-label="Pagination des rapports">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">&laquo; Première</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Précédente</a>
+                                </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Suivante</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Dernière &raquo;</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-clipboard-list fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">Aucun rapport trouvé</h4>
+                    <p class="text-muted">Vous n'avez pas encore créé de rapport.</p>
+                    {% if user.role == 'RESIDENT' %}
+                    <a href="{% url 'finance:report_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Créer votre premier rapport
+                    </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

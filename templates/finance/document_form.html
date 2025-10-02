@@ -1,0 +1,564 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if object %}Modifier Document{% else %}Nouveau Document{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        border: none;
+    }
+    
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .form-body {
+        padding: 2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        transform: scale(1.02);
+    }
+    
+    .type-chips {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+    
+    .chip {
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .chip:hover, .chip.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: scale(1.05);
+    }
+    
+    .dropzone {
+        border: 3px dashed #cbd5e1;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        background: #f8fafc;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .dropzone:hover, .dropzone.drag-over {
+        border-color: #667eea;
+        background: #f0f4ff;
+    }
+    
+    .dropzone .dz-icon {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+    
+    .file-preview {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-top: 1rem;
+    }
+    
+    .btn-modern {
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .info-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: none;
+    }
+    
+    .amount-preview {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #22c55e;
+        text-align: center;
+        padding: 1rem;
+        background: #f0fdf4;
+        border-radius: 10px;
+        margin-top: 10px;
+        border: 2px solid #bbf7d0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+        <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2 class="mb-0">
+                        <i class="fas fa-{% if object %}edit{% else %}file-plus{% endif %} fa-2x mb-3"></i><br>
+                        {% if object %}
+                        Modifier le Document
+                        {% else %}
+                        Nouveau Document
+                        {% endif %}
+                    </h2>
+                    <p class="mb-0 opacity-75">
+                        {% if object %}
+                        Modification de "{{ object.title }}"
+                        {% else %}
+                        Créer un nouveau document pour un résident
+                        {% endif %}
+                    </p>
+            </div>
+
+                <div class="form-body">
+                    <form method="post" enctype="multipart/form-data" id="documentForm">
+                                {% csrf_token %}
+                                
+                        <!-- Titre du document -->
+                                <div class="form-group">
+                                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                <i class="fas fa-heading text-primary me-2"></i>Titre du Document
+                                            </label>
+                                            {{ form.title }}
+                                            {% if form.title.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.title.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                                            {% endif %}
+                            <small class="text-muted">Ex: Facture charges Janvier 2024</small>
+                                        </div>
+
+                        <!-- Type de document -->
+                                <div class="form-group">
+                                            <label for="{{ form.document_type.id_for_label }}" class="form-label">
+                                <i class="fas fa-tag text-info me-2"></i>Type de Document
+                                            </label>
+                                            {{ form.document_type }}
+                            {% if form.document_type.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.document_type.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                                    </div>
+                                            {% endif %}
+                            
+                            <div class="type-chips">
+                                <button type="button" class="chip" data-type="INVOICE">
+                                    <i class="fas fa-file-invoice me-1"></i>Facture
+                                </button>
+                                <button type="button" class="chip" data-type="NOTICE">
+                                    <i class="fas fa-bell me-1"></i>Avis
+                                </button>
+                                <button type="button" class="chip" data-type="REMINDER">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Rappel
+                                </button>
+                                <button type="button" class="chip" data-type="LEGAL">
+                                    <i class="fas fa-gavel me-1"></i>Légal
+                                </button>
+                                <button type="button" class="chip" data-type="OTHER">
+                                    <i class="fas fa-file me-1"></i>Autre
+                                </button>
+                                    </div>
+                                </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Résident -->
+                                <div class="form-group">
+                                            <label for="{{ form.resident.id_for_label }}" class="form-label">
+                                        <i class="fas fa-user text-success me-2"></i>Résident
+                                            </label>
+                                            {{ form.resident }}
+                                            {% if form.resident.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.resident.errors %}
+                                        <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                            {% endif %}
+                                        </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Montant -->
+                                <div class="form-group">
+                                            <label for="{{ form.amount.id_for_label }}" class="form-label">
+                                        <i class="fas fa-coins text-warning me-2"></i>Montant (DH)
+                                            </label>
+                                    <div class="input-group">
+                                        {{ form.amount }}
+                                        <span class="input-group-text">DH</span>
+                                    </div>
+                                    {% if form.amount.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.amount.errors %}
+                                        <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <div id="amountPreview" class="amount-preview d-none">
+                                        0.00 DH
+                                    </div>
+                                </div>
+                                    </div>
+                                </div>
+
+                        <!-- Date -->
+                                <div class="form-group">
+                                            <label for="{{ form.date.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar text-primary me-2"></i>Date du Document
+                                            </label>
+                                            {{ form.date }}
+                                            {% if form.date.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.date.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                                            {% endif %}
+                                </div>
+
+                        <!-- Upload de fichier -->
+                                <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-upload text-info me-2"></i>Fichier du Document
+                                    </label>
+                            <div class="dropzone" id="dropzone">
+                                            <i class="fas fa-cloud-upload-alt dz-icon"></i>
+                                <p class="mb-2">Glissez-déposez votre fichier ici</p>
+                                <p class="text-muted mb-3">ou <button type="button" id="filePickBtn" class="btn btn-link p-0">cliquez pour choisir</button></p>
+                                <small class="text-muted">PDF, DOC, DOCX, JPG, PNG (Max 10MB)</small>
+                                    </div>
+                                            {{ form.file }}
+                                            {% if form.file.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.file.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                                            {% endif %}
+                            <div id="filePreview" class="file-preview d-none">
+                                <i class="fas fa-file"></i>
+                                <span id="fileName"></span>
+                                <span id="fileSize" class="text-muted"></span>
+                                </div>
+                                </div>
+
+                        <!-- Description -->
+                            <div class="form-group">
+                                    <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left text-secondary me-2"></i>Description (optionnel)
+                                    </label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.description.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                                    {% endif %}
+                            <small class="text-muted">Informations supplémentaires sur ce document</small>
+                                </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <a href="{% url 'finance:document_list' %}" class="btn btn-outline-secondary btn-modern w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" class="btn btn-gradient-primary btn-modern w-100">
+                                    <i class="fas fa-save me-2"></i>
+                                    {% if object %}Modifier{% else %}Créer{% endif %}
+                                    </button>
+                            </div>
+                                </div>
+                            </form>
+                    </div>
+                </div>
+
+            <!-- Carte d'informations -->
+            <div class="info-card mt-4">
+                <h6 class="text-primary mb-3">
+                    <i class="fas fa-info-circle me-2"></i>Informations sur les Documents
+                </h6>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-secondary">Types de Documents :</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-file-invoice text-danger me-2"></i><strong>Facture :</strong> Factures de charges</li>
+                            <li><i class="fas fa-bell text-info me-2"></i><strong>Avis :</strong> Avis aux résidents</li>
+                            <li><i class="fas fa-exclamation-triangle text-warning me-2"></i><strong>Rappel :</strong> Rappels de paiement</li>
+                            <li><i class="fas fa-gavel text-dark me-2"></i><strong>Légal :</strong> Documents juridiques</li>
+                            </ul>
+                        </div>
+                    <div class="col-md-6">
+                        <h6 class="text-secondary">Formats Acceptés :</h6>
+                        <ul class="list-unstyled">
+                                <li><i class="fas fa-file-pdf text-danger me-2"></i>PDF (.pdf)</li>
+                                <li><i class="fas fa-file-word text-primary me-2"></i>Word (.doc, .docx)</li>
+                            <li><i class="fas fa-image text-success me-2"></i>Images (.jpg, .png)</li>
+                            <li><i class="fas fa-weight-hanging text-warning me-2"></i>Taille max : 10 MB</li>
+                            </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configuration des champs de formulaire
+        const titleField = document.getElementById('{{ form.title.id_for_label }}');
+        const typeField = document.getElementById('{{ form.document_type.id_for_label }}');
+        const residentField = document.getElementById('{{ form.resident.id_for_label }}');
+        const amountField = document.getElementById('{{ form.amount.id_for_label }}');
+        const dateField = document.getElementById('{{ form.date.id_for_label }}');
+        const fileField = document.getElementById('{{ form.file.id_for_label }}');
+        const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
+
+        // Styling des champs
+        if (titleField) {
+            titleField.classList.add('form-control');
+            titleField.setAttribute('placeholder', 'Ex: Facture charges Janvier 2024');
+        }
+        
+        if (typeField) typeField.classList.add('form-select');
+        if (residentField) residentField.classList.add('form-select');
+        if (amountField) {
+            amountField.classList.add('form-control');
+            amountField.setAttribute('placeholder', '0.00');
+            amountField.setAttribute('step', '0.01');
+            amountField.setAttribute('min', '0');
+        }
+        if (dateField) dateField.classList.add('form-control');
+        if (fileField) {
+            fileField.classList.add('form-control');
+            fileField.style.display = 'none'; // Caché pour utiliser dropzone
+        }
+        if (descriptionField) {
+            descriptionField.classList.add('form-control');
+            descriptionField.setAttribute('rows', '4');
+            descriptionField.setAttribute('placeholder', 'Description détaillée du document...');
+        }
+
+        // Gestion des chips de type
+        const typeChips = document.querySelectorAll('.chip');
+        typeChips.forEach(chip => {
+            chip.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                if (typeField) {
+                    typeField.value = type;
+                    updateTypeSelection();
+                }
+            });
+        });
+
+        function updateTypeSelection() {
+            const selectedType = typeField.value;
+            typeChips.forEach(chip => {
+                if (chip.getAttribute('data-type') === selectedType) {
+                    chip.classList.add('active');
+                } else {
+                    chip.classList.remove('active');
+                }
+            });
+        }
+
+        // Gestion du dropzone
+        const dropzone = document.getElementById('dropzone');
+        const filePickBtn = document.getElementById('filePickBtn');
+        const filePreview = document.getElementById('filePreview');
+
+        if (filePickBtn) {
+            filePickBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                fileField.click();
+            });
+        }
+
+        // Drag & Drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropzone.classList.add('drag-over');
+        }
+
+        function unhighlight(e) {
+            dropzone.classList.remove('drag-over');
+        }
+
+        dropzone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        fileField.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            const allowedTypes = ['application/pdf', 'application/msword', 
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                'image/jpeg', 'image/png'];
+            
+            if (!allowedTypes.includes(file.type)) {
+                alert('Type de fichier non supporté. Utilisez PDF, DOC, DOCX, JPG ou PNG.');
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Le fichier est trop volumineux. Taille maximum : 10 MB.');
+                return;
+            }
+
+            // Mise à jour de l'input file
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileField.files = dt.files;
+
+            // Affichage du preview
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            
+            if (fileName) fileName.textContent = file.name;
+            if (fileSize) fileSize.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            
+            filePreview.classList.remove('d-none');
+            dropzone.style.display = 'none';
+        }
+
+        // Aperçu du montant
+        function updateAmountPreview() {
+            const value = parseFloat(amountField.value) || 0;
+            const preview = document.getElementById('amountPreview');
+            if (value > 0) {
+                preview.textContent = value.toFixed(2) + ' DH';
+                preview.classList.remove('d-none');
+            } else {
+                preview.classList.add('d-none');
+            }
+        }
+
+        if (amountField) {
+            amountField.addEventListener('input', updateAmountPreview);
+        }
+
+        // Validation du formulaire
+        document.getElementById('documentForm').addEventListener('submit', function(e) {
+            const title = titleField.value.trim();
+            const resident = residentField.value;
+            const amount = parseFloat(amountField.value) || 0;
+            
+            if (!title) {
+                e.preventDefault();
+                alert('Veuillez saisir un titre pour le document.');
+                titleField.focus();
+                return;
+            }
+            
+            if (!resident) {
+                e.preventDefault();
+                alert('Veuillez sélectionner un résident.');
+                residentField.focus();
+                return;
+            }
+            
+            if (amount <= 0) {
+                e.preventDefault();
+                alert('Veuillez saisir un montant valide.');
+                amountField.focus();
+                return;
+            }
+        });
+
+        // Initialisation
+        updateTypeSelection();
+        updateAmountPreview();
+});
+</script>
+{% endblock %}
